@@ -1,0 +1,14 @@
+<package name='CCD' version='1.0.0'>
+	<depends on='BEAST.base' atleast='2.7.5'/>
+	<depends on='BEAST.app' atleast='2.7.5'/>
+
+    <service type="beastfx.app.treeannotator.services.TopologySettingService">
+        <provider classname="ccd.tools.CCD0PointEstimate"/>
+        <provider classname="ccd.tools.CCD1PointEstimate"/>
+        <provider classname="ccd.tools.CCD2PointEstimate"/>
+    </service>
+	
+	<packageapp description="Skeleton Analysis" class="ccd.tools.SkeletonAnalysis" args=""/> 
+	<packageapp description="Rogue Analysis" class="ccd.tools.RogueAnalysis" args=""/>
+
+</package>
