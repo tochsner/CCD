@@ -341,6 +341,7 @@ public class Clade {
      * @param height at which clade occurred
      */
     protected void increaseOccurrenceCount(double height) {
+        // TODO: add further state management here
         this.meanHeight = (meanHeight * numOccurrences + height) / (numOccurrences + 1);
 
         increaseOccurrenceCount();
@@ -363,6 +364,7 @@ public class Clade {
      * @param height                   at which clade occurred
      */
     protected void increaseOccurrenceCountBy(int numAdditionalOccurrences, double height) {
+        // TODO: add further state management here
         meanHeight = (meanHeight * numOccurrences + height * numAdditionalOccurrences)
                 / (numOccurrences + numAdditionalOccurrences);
 
@@ -382,6 +384,7 @@ public class Clade {
      * @param height at which clade occurred (but record gets now discarded)
      */
     protected void decreaseOccurrenceCount(double height) {
+        // TODO: add further state management here
         this.meanHeight = (meanHeight * numOccurrences - height) / (numOccurrences - 1);
         // note that if no occurrences remain, then the height is set to NaN
 

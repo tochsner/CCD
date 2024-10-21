@@ -227,6 +227,7 @@ public abstract class AbstractCCD implements ITreeDistribution {
         if (storeBaseTrees) {
             this.baseTrees.add(tree);
         } else if (this.baseTrees.isEmpty()) {
+            // TBD: why do we still store the first tree?
             this.baseTrees.add(tree);
         }
         cladifyVertex(tree.getRoot());
@@ -253,6 +254,8 @@ public abstract class AbstractCCD implements ITreeDistribution {
         if (currentClade == null) {
             currentClade = addNewClade(cladeInBits);
         }
+
+        // TODO: add things here?
         currentClade.increaseOccurrenceCount(vertex.getHeight());
 
         if (!vertex.isLeaf()) {
@@ -262,7 +265,7 @@ public abstract class AbstractCCD implements ITreeDistribution {
                 currentPartition = currentClade.createCladePartition(firstChildClade,
                         secondChildClade);
             }
-            currentPartition.increaseOccurrenceCount(vertex.getHeight());
+            currentPartition.increaseOccurrenceCount(vertex);
         }
 
         return currentClade;
@@ -845,7 +848,7 @@ public abstract class AbstractCCD implements ITreeDistribution {
     }
 
     /* Recursive helper method */
-    private Node getVertexBasedOnStrategy(Clade clade, SamplingStrategy samplingStrategy, HeightSettingStrategy heightStrategy) {
+    protected Node getVertexBasedOnStrategy(Clade clade, SamplingStrategy samplingStrategy, HeightSettingStrategy heightStrategy) {
         // computeCladeProbabilitiesIfDirty();
 
         Node vertex = null;
@@ -934,7 +937,7 @@ public abstract class AbstractCCD implements ITreeDistribution {
     }
 
     /* Helper method */
-    private CladePartition getPartitionBasedOnStrategy(Clade clade, SamplingStrategy samplingStrategy) {
+    protected CladePartition getPartitionBasedOnStrategy(Clade clade, SamplingStrategy samplingStrategy) {
         CladePartition partition = null;
         switch (samplingStrategy) {
             case MAP: {

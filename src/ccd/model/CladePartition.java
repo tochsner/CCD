@@ -1,5 +1,6 @@
 package ccd.model;
 
+import beast.base.evolution.tree.Node;
 import ccd.algorithms.BitSetUtil;
 
 import java.math.BigInteger;
@@ -117,12 +118,17 @@ public class CladePartition {
         this.numOccurrences++;
     }
 
+    protected void increaseOccurrenceCount(Node vertex) {
+        this.increaseOccurrenceCount(vertex.getHeight());
+    }
+
     /**
      * Registers an occurrence of this partition at the given height.
      *
      * @param height at which partition occurred
      */
     protected void increaseOccurrenceCount(double height) {
+        // TODO: add further state management here
         meanHeight = (meanHeight * numOccurrences + height) / (numOccurrences + 1);
 
         increaseOccurrenceCount();
@@ -146,10 +152,15 @@ public class CladePartition {
      */
     protected void increaseOccurrenceCountBy(int numAdditionalOccurrences,
                                              double additionalMeanHeight) {
+        // TODO: add further state management here
         meanHeight = (meanHeight * numOccurrences + additionalMeanHeight * numAdditionalOccurrences)
                 / (numOccurrences + numAdditionalOccurrences);
 
         this.increaseOccurrenceCountBy(numAdditionalOccurrences);
+    }
+
+    protected void decreaseOccurrenceCount(Node vertex) {
+        this.decreaseOccurrenceCount(vertex.getHeight());
     }
 
     /** Removes an occurrence of this partition. */
