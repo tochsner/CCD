@@ -1235,7 +1235,7 @@ public abstract class AbstractCCD implements ITreeDistribution {
                 CladePartition partition = currentClade.getCladePartition(firstChildClade,
                         secondChildClade);
                 if (partition != null) {
-                    runningProbability[0] *= partition.getCCP();
+                    runningProbability[0] *= partition.getCCP(vertex);
                 } else {
                     runningProbability[0] = 0;
                 }

@@ -113,7 +113,7 @@ public class BCCD extends AbstractCCD {
         double firstChildHeight = firstChild.getHeight();
         double secondChildHeight = secondChild.getHeight();
 
-        double minBranchLength = partition.sampleMinBranchLength();
+        double minBranchLength = partition.sampleMinBranchLength(vertex);
         double vertexHeight = Math.max(
                 firstChildHeight + minBranchLength,
                 secondChildHeight + minBranchLength
@@ -121,6 +121,47 @@ public class BCCD extends AbstractCCD {
         vertex.setHeight(vertexHeight);
 
         return vertex;
+    }
+
+    public void sampleBranchLengths(Tree tree) {
+        this.sampleBranchLengths(tree.getRoot());
+    }
+
+    protected Clade sampleBranchLengths(Node vertex) {
+        if (vertex.isLeaf()) {
+            int index = vertex.getNr();
+
+            BitSet cladeInBits = BitSet.newBitSet(leafArraySize);
+            cladeInBits.set(index);
+
+            Clade clade = this.cladeMapping.get(cladeInBits);
+            return clade;
+        }
+
+        Node firstChild = vertex.getChild(0);
+        Node secondChild = vertex.getChild(1);
+
+        Clade firstChildClade = this.sampleBranchLengths(firstChild);
+        Clade secondChildClade = this.sampleBranchLengths(secondChild);
+
+        BitSet currentCladeInBits = BitSet.newBitSet(leafArraySize);
+        currentCladeInBits.or(firstChildClade.getCladeInBits());
+        currentCladeInBits.or(secondChildClade.getCladeInBits());
+
+        Clade currentClade = cladeMapping.get(currentCladeInBits);
+        BCCDCladePartition currentPartition = (BCCDCladePartition) currentClade.getCladePartition(firstChildClade);
+
+        double firstChildHeight = firstChild.getHeight();
+        double secondChildHeight = secondChild.getHeight();
+
+        double minBranchLength = currentPartition.sampleMinBranchLength(vertex);
+        double vertexHeight = Math.max(
+                firstChildHeight + minBranchLength,
+                secondChildHeight + minBranchLength
+        );
+        vertex.setHeight(vertexHeight);
+
+        return currentClade;
     }
 
 
