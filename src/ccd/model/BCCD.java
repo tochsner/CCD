@@ -28,9 +28,7 @@ public class BCCD extends AbstractCCD {
     }
 
     @Override
-    public void initialize() {
-        // nothing to do for CCD1s
-    }
+    public void initialize() {}
 
     @Override
     protected void initializeRootClade(int numLeaves) {

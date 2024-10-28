@@ -17,24 +17,7 @@ public class BCCDCladePartition extends CladePartition {
 
     /* -- BOOK KEEPING - BOOK KEEPING -- */
 
-
-    protected int getMinBranchChildIdx(Node vertex) {
-        double vertexHeight = vertex.getHeight();
-
-        double childHeight1 = vertex.getChild(0).getHeight();
-        double childHeight2 = vertex.getChild(1).getHeight();
-
-        double branchLength1 = vertexHeight - childHeight1;
-        double branchLength2 = vertexHeight - childHeight2;
-
-        if (branchLength1 < branchLength2) {
-            return 0;
-        } else {
-            return 1;
-        }
-    }
-
-    protected static double getMinBranchLength(Node vertex) {
+    protected static double getMinLogBranchLength(Node vertex) {
         if (vertex.isLeaf()) {
             return 0.0;
         }
@@ -47,23 +30,23 @@ public class BCCDCladePartition extends CladePartition {
         double branchLength1 = vertexHeight - childHeight1;
         double branchLength2 = vertexHeight - childHeight2;
 
-        return Math.min(branchLength1, branchLength2);
+        return Math.log(Math.min(branchLength1, branchLength2));
     }
 
     @Override
     protected void increaseOccurrenceCount(Node vertex) {
         super.increaseOccurrenceCount(vertex);
 
-        double branchLength = this.getMinBranchLength(vertex);
-        this.minBranchLengthOccurrences.merge(Math.log(branchLength), 1, Integer::sum);
+        double branchLength = this.getMinLogBranchLength(vertex);
+        this.minBranchLengthOccurrences.merge(branchLength, 1, Integer::sum);
     }
 
     @Override
     protected void decreaseOccurrenceCount(Node vertex) {
         super.decreaseOccurrenceCount(vertex);
 
-        double branchLength = this.getMinBranchLength(vertex);
-        this.minBranchLengthOccurrences.merge(Math.log(branchLength), -1, Integer::sum);
+        double branchLength = this.getMinLogBranchLength(vertex);
+        this.minBranchLengthOccurrences.merge(branchLength, -1, Integer::sum);
     }
 
     /* -- CPP - CPP -- */
@@ -71,10 +54,10 @@ public class BCCDCladePartition extends CladePartition {
     public double getCCP(Node vertex) {
         double ccdCCP = super.getCCP();
 
-        double minBranchLength = getMinBranchLength(vertex);
+        double minBranchLength = getMinLogBranchLength(vertex);
 
         AbstractRealDistribution branchLengthDistribution = this.getBranchLengthDistribution(vertex);
-        double branchProbability = branchLengthDistribution.density(minBranchLength);
+        double branchProbability = branchLengthDistribution.density(Math.exp(minBranchLength));
 
         return ccdCCP * branchProbability;
     }
@@ -104,16 +87,17 @@ public class BCCDCladePartition extends CladePartition {
         }
 
         variance /= totalSamples;
+
         return variance;
     }
 
     protected AbstractRealDistribution getBranchLengthDistribution(Node vertex) {
-        if (this.minBranchLengthOccurrences.size() == 1) {
-            return new ConstantRealDistribution(this.minBranchLengthOccurrences.entrySet().iterator().next().getKey());
-        }
-
         double scale = this.getLogMean(vertex);
         double shape = this.getLogVariance(vertex, scale);
+
+        if (shape == 0.0) {
+            return new ConstantRealDistribution(this.minBranchLengthOccurrences.entrySet().iterator().next().getKey());
+        }
 
         LogNormalDistribution dist = new LogNormalDistribution(scale, shape);
         return dist;
