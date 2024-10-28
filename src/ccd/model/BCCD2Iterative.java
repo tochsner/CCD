@@ -11,44 +11,45 @@ import java.util.Map;
  * <p>
  * Format of the parameter vector: [mu_s ... sigma_s ... beta]
  */
-public class BCCD2Iterative {
-
-    List<BCCD2CladePartition> partitions;
+public class BCCD2Iterative extends BCCD2MLE {
 
     public BCCD2Iterative(List<BCCD2CladePartition> partitions) {
-        this.partitions = partitions;
+        super(partitions);
     }
 
-    public double[] getMusSigmas(double beta) {
-        double[] initialParameters = new double[2*this.partitions.size() + 1];
+    public void updateMusSigmas(double[] parameters) {
+        double beta = parameters[parameters.length - 1];
 
         for (int i = 0; i < this.partitions.size(); i++) {
             BCCD2CladePartition partition = this.partitions.get(i);
+            int numObservations = partition.getObservations().size();
 
-            initialParameters[i] = partition.getLogMeanApproximation();
-            initialParameters[partitions.size() + i] = 2*partition.getLogVarianceApproximation();
+            double mu = 0;
+            for (Map.Entry<CladePartitionObservation, Integer> observationEntry : partition.getObservations().entrySet()) {
+                int n = observationEntry.getValue();
+                double b = observationEntry.getKey().logMinBranchLength();
+                double bDown = observationEntry.getKey().logMinBranchLengthDown();
+
+                mu += n * (b - beta*bDown);
+            }
+            mu /= numObservations;
+
+            double sigma = 0;
+            for (Map.Entry<CladePartitionObservation, Integer> observationEntry : partition.getObservations().entrySet()) {
+                int n = observationEntry.getValue();
+                double b = observationEntry.getKey().logMinBranchLength();
+                double bDown = observationEntry.getKey().logMinBranchLengthDown();
+
+                sigma += n * Math.pow(b - beta*bDown - mu, 2);
+            }
+            sigma /= numObservations;
+
+            parameters[i] = mu;
+            parameters[i + this.partitions.size()] = sigma;
         }
-
-        return initialParameters;
     }
 
-
-    public double[] getInitialGuess(double beta) {
-        double[] initialParameters = new double[2*this.partitions.size() + 1];
-
-        for (int i = 0; i < this.partitions.size(); i++) {
-            BCCD2CladePartition partition = this.partitions.get(i);
-
-            initialParameters[i] = 2*partition.getLogMeanApproximation();
-            initialParameters[partitions.size() + i] = 2*partition.getLogVarianceApproximation();
-        }
-
-        initialParameters[initialParameters.length - 1] = beta;
-
-        return initialParameters;
-    }
-
-    public double getInitialBeta(double[] parameters) {
+    public void updateBeta(double[] parameters) {
         double nominator = 0;
         double denominator = 0;
 
@@ -65,11 +66,11 @@ public class BCCD2Iterative {
                 double b = observationEntry.getKey().logMinBranchLength();
                 double bDown = observationEntry.getKey().logMinBranchLengthDown();
 
-                nominator += (b - mu) * bDown / sigma;
-                denominator +=Math.pow(bDown, 2) / sigma;
+                nominator += n * (b - mu) * bDown / sigma;
+                denominator += n * Math.pow(bDown, 2) / sigma;
             }
         }
 
-        return nominator / denominator;
+        parameters[parameters.length - 1] = nominator / denominator;
     }
 }

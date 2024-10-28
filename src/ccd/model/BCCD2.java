@@ -68,25 +68,37 @@ public class BCCD2 extends BCCD {
     protected void estimateParameters() {
         List<BCCD2CladePartition> partitions = this.getAllPartitions();
 
-        BCCD2MLE mleProblem = new BCCD2MLE(partitions);
-        NonLinearConjugateGradientOptimizer optimizer = new NonLinearConjugateGradientOptimizer(
-                NonLinearConjugateGradientOptimizer.Formula.FLETCHER_REEVES,
-                new SimpleValueChecker(1e-4, 0)
-        );
+        BCCD2Iterative mleProblem = new BCCD2Iterative(partitions);
+        SimpleValueChecker convergenceChecker = new SimpleValueChecker(1e-5, 0);
 
-        PointValuePair solution = optimizer.optimize(
-                GoalType.MAXIMIZE,
-                new InitialGuess(mleProblem.getInitialGuess()),
-                mleProblem.logMLE(),
-                mleProblem.logMLEGradient(),
-                new MaxEval(50000)
-        );
+        double[] solution = mleProblem.getInitialGuess();
+
+        int iteration = 0;
+        double previousMLE;
+        double currentMLE = mleProblem.logMLE().getObjectiveFunction().value(solution);
+
+        while (true) {
+            mleProblem.updateMusSigmas(solution);
+            mleProblem.updateBeta(solution);
+
+            previousMLE = currentMLE;
+            currentMLE = mleProblem.logMLE().getObjectiveFunction().value(solution);
+
+            boolean hasConverged = convergenceChecker.converged(
+                    iteration++, new PointValuePair(solution, previousMLE), new PointValuePair(solution, currentMLE)
+            );
+
+            if (hasConverged)
+                break;
+        }
+
+        System.out.println(solution[solution.length - 1]);
 
         for (int i = 0; i < partitions.size(); i++) {
             BCCD2CladePartition partition = partitions.get(i);
-            partition.setMu(solution.getPoint()[i]);
-            partition.setSigma(solution.getPoint()[partitions.size() + i]);
-            partition.setBeta(solution.getPoint()[2*partitions.size()]);
+            partition.setMu(solution[i]);
+            partition.setSigma(solution[partitions.size() + i]);
+            partition.setBeta(solution[2 * partitions.size()]);
         }
     }
 
