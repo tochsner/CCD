@@ -77,7 +77,7 @@ public class BCCD2MLE {
                     );
 
                     // beta
-//                    gradient[parameters.length - 1] += n * (b - mu - beta * bDown) * bDown / sigma;
+                    gradient[parameters.length - 1] += n * (b - mu - beta * bDown) * bDown / sigma;
                 }
             }
             return gradient;
@@ -90,27 +90,11 @@ public class BCCD2MLE {
         for (int i = 0; i < this.partitions.size(); i++) {
             BCCD2CladePartition partition = this.partitions.get(i);
 
-            initialParameters[i] = 2*partition.getLogMeanApproximation();
-            initialParameters[partitions.size() + i] = 2*partition.getLogVarianceApproximation();
+            initialParameters[i] = partition.getLogMeanApproximation();
+            initialParameters[partitions.size() + i] = partition.getLogVarianceApproximation();
         }
 
         initialParameters[initialParameters.length - 1] = 0.0;
-
-        return initialParameters;
-    }
-
-
-    public double[] getInitialGuess(double beta) {
-        double[] initialParameters = new double[2*this.partitions.size() + 1];
-
-        for (int i = 0; i < this.partitions.size(); i++) {
-            BCCD2CladePartition partition = this.partitions.get(i);
-
-            initialParameters[i] = 2*partition.getLogMeanApproximation();
-            initialParameters[partitions.size() + i] = 2*partition.getLogVarianceApproximation();
-        }
-
-        initialParameters[initialParameters.length - 1] = beta;
 
         return initialParameters;
     }
