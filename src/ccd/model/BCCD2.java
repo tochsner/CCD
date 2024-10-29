@@ -11,6 +11,8 @@ import org.apache.commons.math3.optim.SimpleValueChecker;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 public class BCCD2 extends BCCD {
@@ -63,36 +65,13 @@ public class BCCD2 extends BCCD {
         return clade;
     }
 
-    /* -- CLADE CREATION - CLADE CREATION -- */
+    /* -- PARAMETER ESTIMATION - PARAMETER ESTIMATION -- */
 
     protected void estimateParameters() {
         List<BCCD2CladePartition> partitions = this.getAllPartitions();
 
         BCCD2Iterative mleProblem = new BCCD2Iterative(partitions);
-        SimpleValueChecker convergenceChecker = new SimpleValueChecker(1e-5, 0);
-
-        double[] solution = mleProblem.getInitialGuess();
-
-        int iteration = 0;
-        double previousMLE;
-        double currentMLE = mleProblem.logMLE().getObjectiveFunction().value(solution);
-
-        while (true) {
-            mleProblem.updateMusSigmas(solution);
-            mleProblem.updateBeta(solution);
-
-            previousMLE = currentMLE;
-            currentMLE = mleProblem.logMLE().getObjectiveFunction().value(solution);
-
-            boolean hasConverged = convergenceChecker.converged(
-                    iteration++, new PointValuePair(solution, previousMLE), new PointValuePair(solution, currentMLE)
-            );
-
-            if (hasConverged)
-                break;
-        }
-
-        System.out.println(solution[solution.length - 1]);
+        double[] solution = mleProblem.estimateParameters();
 
         for (int i = 0; i < partitions.size(); i++) {
             BCCD2CladePartition partition = partitions.get(i);

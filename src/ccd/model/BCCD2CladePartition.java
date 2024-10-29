@@ -92,40 +92,6 @@ public class BCCD2CladePartition extends BCCDCladePartition {
 
     /* -- Sampling - Sampling -- */
 
-    protected double getLogMeanApproximation() {
-        double mean = 0;
-        int totalSamples = 0;
-
-        for (Map.Entry<CladePartitionObservation, Integer> branchLength : this.observations.entrySet()) {
-            mean += branchLength.getValue() * branchLength.getKey().logMinBranchLength();
-            totalSamples++;
-        }
-
-        mean /= totalSamples;
-        return mean;
-    }
-
-    protected double getLogVarianceApproximation() {
-        double mean = 0;
-        int totalSamples = 0;
-
-        for (Map.Entry<CladePartitionObservation, Integer> branchLength : this.observations.entrySet()) {
-            mean += branchLength.getValue() * branchLength.getKey().logMinBranchLength();
-            totalSamples++;
-        }
-
-        mean /= totalSamples;
-
-        double variance = 0;
-
-        for (Map.Entry<CladePartitionObservation, Integer> branchLength : this.observations.entrySet()) {
-            variance += branchLength.getValue() * Math.pow(branchLength.getKey().logMinBranchLength() - mean, 2);
-        }
-
-        variance /= totalSamples;
-        return variance;
-    }
-
     @Override
     protected double getLogMean(Node vertex) {
         return getMu() + getBeta() * getMinLogBranchLengthDown(vertex);
