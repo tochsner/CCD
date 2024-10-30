@@ -22,27 +22,29 @@ public class BCCD2Iterative extends BCCD2MLE {
     public void updateMusSigmas(double[] parameters) {
         double beta = parameters[parameters.length - 1];
 
+        int a = 0;
+
         for (int i = 0; i < this.partitions.size(); i++) {
             BCCD2CladePartition partition = this.partitions.get(i);
             int numObservations = partition.getObservations().size();
 
             double mu = 0;
-            for (Map.Entry<CladePartitionObservation, Integer> observationEntry : partition.getObservations().entrySet()) {
-                int n = observationEntry.getValue();
-                double b = observationEntry.getKey().logMinBranchLength();
-                double bDown = observationEntry.getKey().logMinBranchLengthDown();
+            for (CladePartitionObservation observation : partition.getObservations()) {
+                double b = observation.logMinBranchLength();
+                double bDown = observation.logMinBranchLengthDown();
 
-                mu += n * (b - beta*bDown);
+                mu += b - beta*bDown;
+
+                a++;
             }
             mu /= numObservations;
 
             double sigma = 0;
-            for (Map.Entry<CladePartitionObservation, Integer> observationEntry : partition.getObservations().entrySet()) {
-                int n = observationEntry.getValue();
-                double b = observationEntry.getKey().logMinBranchLength();
-                double bDown = observationEntry.getKey().logMinBranchLengthDown();
+            for (CladePartitionObservation observation : partition.getObservations()) {
+                double b = observation.logMinBranchLength();
+                double bDown = observation.logMinBranchLengthDown();
 
-                sigma += n * Math.pow(b - beta*bDown - mu, 2);
+                sigma += Math.pow(b - beta*bDown - mu, 2);
             }
             sigma /= numObservations;
 
@@ -63,13 +65,12 @@ public class BCCD2Iterative extends BCCD2MLE {
 
             if (partition.getObservations().size() == 1) continue;
 
-            for (Map.Entry<CladePartitionObservation, Integer> observationEntry : partition.getObservations().entrySet()) {
-                int n = observationEntry.getValue();
-                double b = observationEntry.getKey().logMinBranchLength();
-                double bDown = observationEntry.getKey().logMinBranchLengthDown();
+            for (CladePartitionObservation observation : partition.getObservations()) {
+                double b = observation.logMinBranchLength();
+                double bDown = observation.logMinBranchLengthDown();
 
-                nominator += n * (b - mu) * bDown / sigma;
-                denominator += n * Math.pow(bDown, 2) / sigma;
+                nominator += (b - mu) * bDown / sigma;
+                denominator += Math.pow(bDown, 2) / sigma;
             }
         }
 

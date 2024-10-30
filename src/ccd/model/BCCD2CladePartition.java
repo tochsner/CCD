@@ -2,11 +2,12 @@ package ccd.model;
 
 import beast.base.evolution.tree.Node;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 public class BCCD2CladePartition extends BCCDCladePartition {
-    private Map<CladePartitionObservation, Integer> observations = new HashMap<>();
+    private List<CladePartitionObservation> observations = new LinkedList<>();
 
     public BCCD2CladePartition(BCCD2Clade parentClade, BCCD2Clade[] childClades) {
         super(parentClade, childClades);
@@ -22,9 +23,9 @@ public class BCCD2CladePartition extends BCCDCladePartition {
         double secondChildHeight = secondChild.getHeight();
 
         if (firstChildHeight < secondChildHeight) {
-            return getMinLogBranchLength(firstChild);
-        } else {
             return getMinLogBranchLength(secondChild);
+        } else {
+            return getMinLogBranchLength(firstChild);
         }
     }
 
@@ -37,7 +38,7 @@ public class BCCD2CladePartition extends BCCDCladePartition {
                 getMinLogBranchLengthDown(vertex)
         );
 
-        this.observations.merge(observation, 1, Integer::sum);
+        this.observations.add(observation);
     }
 
     @Override
@@ -49,15 +50,19 @@ public class BCCD2CladePartition extends BCCDCladePartition {
                 getMinLogBranchLengthDown(vertex)
         );
 
-        this.observations.merge(observation, -1, Integer::sum);
+        this.observations.removeIf(x -> x == observation);
     }
 
-    public Map<CladePartitionObservation, Integer> getObservations() {
+    public List<CladePartitionObservation> getObservations() {
         return observations;
     }
 
-    public void setObservations(Map<CladePartitionObservation, Integer> observations) {
-        this.observations = observations;
+    public DoubleStream getObservedMinLogBranchLength() {
+        return this.getObservations().stream().mapToDouble(x -> x.logMinBranchLength());
+    }
+
+    public DoubleStream getObservedMinLogBranchLengthsDown() {
+        return this.getObservations().stream().mapToDouble(x -> x.logMinBranchLengthDown());
     }
 
     /* -- DISTRIBUTION PARAMETERS - DISTRIBUTION PARAMETERS -- */

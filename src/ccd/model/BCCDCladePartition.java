@@ -50,6 +50,7 @@ public class BCCDCladePartition extends CladePartition {
     }
 
     /* -- CPP - CPP -- */
+
     @Override
     public double getCCP(Node vertex) {
         double ccdCCP = super.getCCP();

@@ -35,12 +35,11 @@ public class BCCD2MLE {
 
                 if (sigma == 0.0) continue;
 
-                for (Map.Entry<CladePartitionObservation, Integer> observationEntry : partition.getObservations().entrySet()) {
-                    int n = observationEntry.getValue();
-                    double b = observationEntry.getKey().logMinBranchLength();
-                    double bDown = observationEntry.getKey().logMinBranchLengthDown();
+                for (CladePartitionObservation observation : partition.getObservations()) {
+                    double b = observation.logMinBranchLength();
+                    double bDown = observation.logMinBranchLengthDown();
 
-                    logMLE += n * 0.5 * (-Math.log(2*sigma*Math.PI) - Math.pow(b - mu - beta * bDown, 2) / sigma);
+                    logMLE += 0.5 * (-Math.log(2*sigma*Math.PI) - Math.pow(b - mu - beta * bDown, 2) / sigma);
                 }
             }
 
@@ -59,23 +58,22 @@ public class BCCD2MLE {
                 double mu = parameters[i];
                 double sigma = parameters[partitions.size() + i];
 
-                if (partition.getObservations().size() == 1) continue;
+                if (sigma == 0.0) continue;
 
-                for (Map.Entry<CladePartitionObservation, Integer> observationEntry : partition.getObservations().entrySet()) {
-                    int n = observationEntry.getValue();
-                    double b = observationEntry.getKey().logMinBranchLength();
-                    double bDown = observationEntry.getKey().logMinBranchLengthDown();
+                for (CladePartitionObservation observation : partition.getObservations()) {
+                    double b = observation.logMinBranchLength();
+                    double bDown = observation.logMinBranchLengthDown();
 
                     // mu
-                    gradient[i] += n * (b - mu - beta * bDown) / sigma;
+                    gradient[i] += (b - mu - beta * bDown) / sigma;
 
                     // sigma
-                    gradient[partitions.size() + i] += n * 0.5 * (
+                    gradient[partitions.size() + i] += 0.5 * (
                             (-1 / sigma) + Math.pow(b - mu - beta * bDown, 2) / Math.pow(sigma, 2)
                     );
 
                     // beta
-                    gradient[parameters.length - 1] += n * (b - mu - beta * bDown) * bDown / sigma;
+                    gradient[parameters.length - 1] += (b - mu - beta * bDown) * bDown / sigma;
                 }
             }
             return gradient;

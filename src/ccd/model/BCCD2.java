@@ -70,7 +70,7 @@ public class BCCD2 extends BCCD {
     protected void estimateParameters() {
         List<BCCD2CladePartition> partitions = this.getAllPartitions();
 
-        BCCD2Iterative mleProblem = new BCCD2Iterative(partitions);
+        BCCD2MoM mleProblem = new BCCD2MoM(partitions);
         double[] solution = mleProblem.estimateParameters();
 
         for (int i = 0; i < partitions.size(); i++) {
