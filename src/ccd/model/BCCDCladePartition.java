@@ -6,10 +6,13 @@ import org.apache.commons.math3.distribution.LogNormalDistribution;
 import org.apache.commons.math3.distribution.ConstantRealDistribution;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.DoubleStream;
 
 public class BCCDCladePartition extends CladePartition {
-    private Map<Double, Integer> minBranchLengthOccurrences = new HashMap<>();
+    private List<CladePartitionObservation> observations = new LinkedList<>();
 
     public BCCDCladePartition(BCCDClade parentClade, BCCDClade[] childClades) {
         super(parentClade, childClades);
@@ -33,23 +36,76 @@ public class BCCDCladePartition extends CladePartition {
         return Math.log(Math.min(branchLength1, branchLength2));
     }
 
+    protected static double getMinLogBranchLengthDown(Node vertex) {
+        Node firstChild = vertex.getChild(0);
+        Node secondChild = vertex.getChild(1);
+
+        double firstChildHeight = firstChild.getHeight();
+        double secondChildHeight = secondChild.getHeight();
+
+        if (firstChildHeight < secondChildHeight) {
+            return getMinLogBranchLength(secondChild);
+        } else {
+            return getMinLogBranchLength(firstChild);
+        }
+    }
+
     @Override
     protected void increaseOccurrenceCount(Node vertex) {
         super.increaseOccurrenceCount(vertex);
 
-        double branchLength = this.getMinLogBranchLength(vertex);
-        this.minBranchLengthOccurrences.merge(branchLength, 1, Integer::sum);
+        CladePartitionObservation observation = new CladePartitionObservation(
+                getMinLogBranchLength(vertex),
+                getMinLogBranchLengthDown(vertex)
+        );
+
+        this.observations.add(observation);
     }
 
     @Override
     protected void decreaseOccurrenceCount(Node vertex) {
         super.decreaseOccurrenceCount(vertex);
 
-        double branchLength = this.getMinLogBranchLength(vertex);
-        this.minBranchLengthOccurrences.merge(branchLength, -1, Integer::sum);
+        CladePartitionObservation observation = new CladePartitionObservation(
+                getMinLogBranchLength(vertex),
+                getMinLogBranchLengthDown(vertex)
+        );
+
+        this.observations.removeIf(x -> x == observation);
     }
 
-    /* -- CPP - CPP -- */
+    public List<CladePartitionObservation> getObservations() {
+        return observations;
+    }
+
+    public DoubleStream getObservedMinLogBranchLength() {
+        return this.getObservations().stream().mapToDouble(x -> x.logMinBranchLength());
+    }
+
+    public DoubleStream getObservedMinLogBranchLengthsDown() {
+        return this.getObservations().stream().mapToDouble(x -> x.logMinBranchLengthDown());
+    }
+
+    /* -- DISTRIBUTION - DISTRIBUTION -- */
+
+    protected double logMean;
+    protected double logVariance;
+
+    public double getLogMean() {
+        return logMean;
+    }
+
+    public void setLogMean(double logMean) {
+        this.logMean = logMean;
+    }
+
+    public double getLogVariance() {
+        return logVariance;
+    }
+
+    public void setLogVariance(double logVariance) {
+        this.logVariance = logVariance;
+    }
 
     @Override
     public double getCCP(Node vertex) {
@@ -65,43 +121,15 @@ public class BCCDCladePartition extends CladePartition {
 
     /* -- Sampling - Sampling -- */
 
-    protected double getLogMean(Node vertex) {
-        double mean = 0;
-        int totalSamples = 0;
-
-        for (Map.Entry<Double, Integer> branchLength : this.minBranchLengthOccurrences.entrySet()) {
-            mean += branchLength.getValue() * branchLength.getKey();
-            totalSamples++;
-        }
-
-        mean /= totalSamples;
-        return mean;
-    }
-
-    protected double getLogVariance(Node vertex, double logSampleMean) {
-        double variance = 0;
-        int totalSamples = 0;
-
-        for (Map.Entry<Double, Integer> branchLength : this.minBranchLengthOccurrences.entrySet()) {
-            variance += branchLength.getValue() * Math.pow(branchLength.getKey() - logSampleMean, 2);
-            totalSamples++;
-        }
-
-        variance /= totalSamples;
-
-        return variance;
-    }
-
     protected AbstractRealDistribution getBranchLengthDistribution(Node vertex) {
-        double scale = this.getLogMean(vertex);
-        double shape = this.getLogVariance(vertex, scale);
+        double scale = this.getLogMean();
+        double shape = this.getLogVariance();
 
         if (shape == 0.0) {
-            return new ConstantRealDistribution(this.minBranchLengthOccurrences.entrySet().iterator().next().getKey());
+            return new ConstantRealDistribution(scale);
+        } else {
+            return new LogNormalDistribution(scale, shape);
         }
-
-        LogNormalDistribution dist = new LogNormalDistribution(scale, shape);
-        return dist;
     }
 
     public double sampleMinBranchLength(Node vertex) {

@@ -2,33 +2,29 @@ package ccd.model;
 
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
-import beastfx.app.treeannotator.TreeAnnotator.TreeSet;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class BCCD extends AbstractCCD {
 
     /* -- CONSTRUCTORS & CONSTRUCTION METHODS -- */
 
-    public BCCD(List<Tree> trees, double burnin) {
-        super(trees, burnin);
-    }
-
-    public BCCD(TreeSet treeSet) {
-        this(treeSet, false);
-    }
-
-    public BCCD(TreeSet treeSet, boolean storeBaseTrees) {
-        super(treeSet, storeBaseTrees);
-    }
-
-    public BCCD(int numLeaves, boolean storeBaseTrees) {
+    public BCCD(int numLeaves, boolean storeBaseTrees, BCCDParameterEstimator estimator) {
         super(numLeaves, storeBaseTrees);
+        this.estimator = estimator;
     }
+
+    /* -- INITIALIZATION -- */
+
+    BCCDParameterEstimator estimator;
 
     @Override
-    public void initialize() {}
+    public void initialize() {
+        this.estimator.estimateParameters(this.getAllPartitions());
+    }
 
     @Override
     protected void initializeRootClade(int numLeaves) {
@@ -162,8 +158,8 @@ public class BCCD extends AbstractCCD {
         return currentClade;
     }
 
-
     /* -- STATE MANAGEMENT - STATE MANAGEMENT -- */
+
     @Override
     public void setCacheAsDirty() {
         super.setCacheAsDirty();
@@ -184,11 +180,19 @@ public class BCCD extends AbstractCCD {
         return false;
     }
 
-    /* -- PROBABILITY, POINT ESTIMATE & SAMPLING METHODS -- */
-    // all handled by parent class AbstractCCD as long as clade partition
-    // probabilities are set correctly
-
     /* -- OTHER METHODS -- */
+
+    public List<BCCDCladePartition> getAllPartitions() {
+        Set<BCCDCladePartition> partitions = new HashSet<>();
+
+        for (Clade clade : this.getClades()) {
+            for (CladePartition partition : clade.partitions) {
+                partitions.add((BCCDCladePartition) partition);
+            }
+        }
+
+        return new ArrayList<>(partitions);
+    }
 
     @Override
     public String toString() {

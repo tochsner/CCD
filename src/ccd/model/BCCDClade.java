@@ -1,8 +1,5 @@
 package ccd.model;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class BCCDClade extends Clade {
     public BCCDClade(BitSet cladeInBits, AbstractCCD abstractCCD) {
         super(cladeInBits, abstractCCD);

@@ -1,34 +1,19 @@
 package ccd.model;
 
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.distribution.RealDistribution;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunctionGradient;
 
-import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
-/**
- * This class implements the log MLE for the BCCD2 model (up to some constant).
- * <p>
- * Format of the parameter vector: [mu_s ... sigma_s ... beta]
- */
-public class BCCD2MLE {
+public class BCCDMLE extends BCCDParameterEstimator {
 
-    List<BCCD2CladePartition> partitions;
-
-    public BCCD2MLE(List<BCCD2CladePartition> partitions) {
-        this.partitions = partitions;
-    }
-
-    public ObjectiveFunction logMLE() {
+    public ObjectiveFunction logMLE(List<BCCDCladePartition> partitions) {
         return new ObjectiveFunction(parameters -> {
             double beta = parameters[parameters.length - 1];
 
             double logMLE = 0.0;
-            for (int i = 0; i < this.partitions.size(); i++) {
-                BCCD2CladePartition partition = this.partitions.get(i);
+            for (int i = 0; i < partitions.size(); i++) {
+                BCCDCladePartition partition = partitions.get(i);
 
                 double mu = parameters[i];
                 double sigma = parameters[partitions.size() + i];
@@ -47,13 +32,13 @@ public class BCCD2MLE {
         });
     }
 
-    public ObjectiveFunctionGradient logMLEGradient() {
+    public ObjectiveFunctionGradient logMLEGradient(List<BCCDCladePartition> partitions) {
         return new ObjectiveFunctionGradient(parameters -> {
             double beta = parameters[parameters.length - 1];
 
             double[] gradient = new double[parameters.length];
-            for (int i = 0; i < this.partitions.size(); i++) {
-                BCCD2CladePartition partition = this.partitions.get(i);
+            for (int i = 0; i < partitions.size(); i++) {
+                BCCDCladePartition partition = partitions.get(i);
 
                 double mu = parameters[i];
                 double sigma = parameters[partitions.size() + i];
@@ -78,5 +63,10 @@ public class BCCD2MLE {
             }
             return gradient;
         });
+    }
+
+    @Override
+    public void estimateParameters(List<BCCDCladePartition> partitions) {
+
     }
 }
