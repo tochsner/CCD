@@ -5,10 +5,9 @@ import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.LogNormalDistribution;
 import org.apache.commons.math3.distribution.ConstantRealDistribution;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.DoubleStream;
 
 public class BCCDCladePartition extends CladePartition {
@@ -50,15 +49,19 @@ public class BCCDCladePartition extends CladePartition {
         }
     }
 
-    @Override
-    protected void increaseOccurrenceCount(Node vertex) {
-        super.increaseOccurrenceCount(vertex);
-
+    private static CladePartitionObservation createObservation(Node vertex) {
         CladePartitionObservation observation = new CladePartitionObservation(
                 getMinLogBranchLength(vertex),
                 getMinLogBranchLengthDown(vertex)
         );
+        return observation;
+    }
 
+    @Override
+    protected void increaseOccurrenceCount(Node vertex) {
+        super.increaseOccurrenceCount(vertex);
+
+        CladePartitionObservation observation = createObservation(vertex);
         this.observations.add(observation);
     }
 
@@ -66,11 +69,7 @@ public class BCCDCladePartition extends CladePartition {
     protected void decreaseOccurrenceCount(Node vertex) {
         super.decreaseOccurrenceCount(vertex);
 
-        CladePartitionObservation observation = new CladePartitionObservation(
-                getMinLogBranchLength(vertex),
-                getMinLogBranchLengthDown(vertex)
-        );
-
+        CladePartitionObservation observation = createObservation(vertex);
         this.observations.removeIf(x -> x == observation);
     }
 
@@ -88,23 +87,23 @@ public class BCCDCladePartition extends CladePartition {
 
     /* -- DISTRIBUTION - DISTRIBUTION -- */
 
-    protected double logMean;
-    protected double logVariance;
+    protected Function<CladePartitionObservation, Double> logMeanFunc;
+    protected Function<CladePartitionObservation, Double> logVarianceFunc;
 
-    public double getLogMean() {
-        return logMean;
+    public Function<CladePartitionObservation, Double> getLogMeanFunc() {
+        return logMeanFunc;
     }
 
-    public void setLogMean(double logMean) {
-        this.logMean = logMean;
+    public void setLogMeanFunc(Function<CladePartitionObservation, Double> logMeanFunc) {
+        this.logMeanFunc = logMeanFunc;
     }
 
-    public double getLogVariance() {
-        return logVariance;
+    public Function<CladePartitionObservation, Double> getLogVarianceFunc() {
+        return logVarianceFunc;
     }
 
-    public void setLogVariance(double logVariance) {
-        this.logVariance = logVariance;
+    public void setLogVarianceFunc(Function<CladePartitionObservation, Double> logVarianceFunc) {
+        this.logVarianceFunc = logVarianceFunc;
     }
 
     @Override
@@ -122,8 +121,10 @@ public class BCCDCladePartition extends CladePartition {
     /* -- Sampling - Sampling -- */
 
     protected AbstractRealDistribution getBranchLengthDistribution(Node vertex) {
-        double scale = this.getLogMean();
-        double shape = this.getLogVariance();
+        CladePartitionObservation observation = createObservation(vertex);
+
+        double scale = this.getLogMeanFunc().apply(observation);
+        double shape = this.getLogVarianceFunc().apply(observation);
 
         if (shape == 0.0) {
             return new ConstantRealDistribution(scale);

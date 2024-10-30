@@ -1,11 +1,36 @@
 package ccd.model;
 
+import org.apache.commons.math3.optim.InitialGuess;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.PointValuePair;
+import org.apache.commons.math3.optim.SimpleValueChecker;
+import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunctionGradient;
+import org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer;
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
+import org.apache.commons.math3.stat.descriptive.moment.Variance;
 
 import java.util.List;
 
 public class BCCDMLE extends BCCDParameterEstimator {
+    @Override
+    public void estimateParameters(List<BCCDCladePartition> partitions) {
+        NonLinearConjugateGradientOptimizer optimizer = new NonLinearConjugateGradientOptimizer(
+                NonLinearConjugateGradientOptimizer.Formula.FLETCHER_REEVES,
+                new SimpleValueChecker(1e-4, 0)
+        );
+
+        double[] solution = optimizer.optimize(
+                GoalType.MAXIMIZE,
+                new InitialGuess(this.getInitialGuess(partitions)),
+                this.logMLE(partitions),
+                this.logMLEGradient(partitions),
+                new MaxEval(50000)
+        ).getPoint();
+
+        this.setPartitionParameters(partitions, solution);
+    }
 
     public ObjectiveFunction logMLE(List<BCCDCladePartition> partitions) {
         return new ObjectiveFunction(parameters -> {
@@ -65,8 +90,32 @@ public class BCCDMLE extends BCCDParameterEstimator {
         });
     }
 
-    @Override
-    public void estimateParameters(List<BCCDCladePartition> partitions) {
+    public double[] getInitialGuess(List<BCCDCladePartition> partitions) {
+        double[] initialParameters = new double[2*partitions.size() + 1];
 
+        for (int i = 0; i < partitions.size(); i++) {
+            BCCDCladePartition partition = partitions.get(i);
+
+            double[] branchLengths = partition.getObservedMinLogBranchLength().toArray();
+            initialParameters[i] = new Mean().evaluate(branchLengths);
+            initialParameters[partitions.size() + i] = new Variance().evaluate(branchLengths);
+        }
+
+        initialParameters[initialParameters.length - 1] = 0.0;
+
+        return initialParameters;
+    }
+
+    protected static void setPartitionParameters(List<BCCDCladePartition> partitions, double[] solution) {
+        double beta = solution[solution.length - 1];
+
+        for (int i = 0; i < partitions.size(); i++) {
+            double mu = solution[i];
+            double sigma = solution[partitions.size() + i];
+
+            BCCDCladePartition partition = partitions.get(i);
+            partition.setLogMeanFunc(x -> mu + beta * x.logMinBranchLengthDown());
+            partition.setLogVarianceFunc(x -> sigma);
+        }
     }
 }

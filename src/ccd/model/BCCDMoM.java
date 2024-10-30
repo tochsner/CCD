@@ -1,5 +1,6 @@
 package ccd.model;
 
+import beast.base.core.Function;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.descriptive.moment.Variance;
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;
@@ -9,6 +10,25 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class BCCDMoM extends BCCDParameterEstimator {
+    @Override
+    public void estimateParameters(List<BCCDCladePartition> partitions) {
+        double[] solution = new double[2 * partitions.size() + 1];
+
+        updateBeta(partitions, solution);
+        updateMus(partitions, solution);
+        updateSigmas(partitions, solution);
+
+        double beta = solution[solution.length - 1];
+
+        for (int i = 0; i < partitions.size(); i++) {
+            double mu = solution[i];
+            double sigma = solution[partitions.size() + i];
+
+            BCCDCladePartition partition = partitions.get(i);
+            partition.setLogMeanFunc(x -> mu + beta * x.logMinBranchLengthDown());
+            partition.setLogVarianceFunc(x -> sigma);
+        }
+    }
 
     public void updateBeta(List<BCCDCladePartition> partitions, double[] parameters) {
         double beta = 0.0;
@@ -88,21 +108,6 @@ public class BCCDMoM extends BCCDParameterEstimator {
         double lowSigma = new Percentile().evaluate(allSigmas.stream().mapToDouble(x -> x).toArray(), 5);
         for (int i : idxWithNegativeEstimate) {
             parameters[partitions.size() + i] = lowSigma;
-        }
-    }
-
-    @Override
-    public void estimateParameters(List<BCCDCladePartition> partitions) {
-        double[] solution = new double[2 * partitions.size() + 1];
-
-        updateBeta(partitions, solution);
-        updateMus(partitions, solution);
-        updateSigmas(partitions, solution);
-
-        for (int i = 0; i < partitions.size(); i++) {
-            BCCDCladePartition partition = partitions.get(i);
-            partition.setLogMean(solution[i]);
-            partition.setLogVariance(solution[partitions.size() + i]);
         }
     }
 }
