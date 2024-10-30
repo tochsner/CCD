@@ -105,7 +105,7 @@ public class BCCDMoM extends BCCDParameterEstimator {
             parameters[partitions.size() + i] = meanSigma;
         }
 
-        double lowSigma = new Percentile().evaluate(allSigmas.stream().mapToDouble(x -> x).toArray(), 5);
+        double lowSigma = new Percentile().evaluate(allSigmas.stream().mapToDouble(x -> x).toArray(), 2);
         for (int i : idxWithNegativeEstimate) {
             parameters[partitions.size() + i] = lowSigma;
         }
