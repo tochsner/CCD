@@ -63,16 +63,19 @@ public class BCCDCladePartition extends CladePartition {
     }
 
     protected static double getLogBranchLengthOldOld(Node vertex) {
+        if (vertex.getLeft().isLeaf() || vertex.getRight().isLeaf()) return 0.0;
         Node oldChild = vertex.getChild(getOldChildIndex(vertex));
         return getLogBranchLengthOld(oldChild);
     }
 
     protected static double getLogBranchLengthOldYoung(Node vertex) {
+        if (vertex.getLeft().isLeaf() || vertex.getRight().isLeaf()) return 0.0;
         Node oldChild = vertex.getChild(getOldChildIndex(vertex));
         return getLogBranchLengthYoung(oldChild);
     }
 
     protected static double getLogBranchLengthOldSmall(Node vertex) {
+        if (vertex.getLeft().isLeaf() || vertex.getRight().isLeaf()) return 0.0;
         Node oldChild = vertex.getChild(getOldChildIndex(vertex));
         if (oldChild.isLeaf()) return 0.0;
         int smallChild = getSmallChildIndex(oldChild);
@@ -80,6 +83,7 @@ public class BCCDCladePartition extends CladePartition {
     }
 
     protected static double getLogBranchLengthOldBig(Node vertex) {
+        if (vertex.getLeft().isLeaf() || vertex.getRight().isLeaf()) return 0.0;
         Node oldChild = vertex.getChild(getOldChildIndex(vertex));
         if (oldChild.isLeaf()) return 0.0;
         int bigChild = 1 - getSmallChildIndex(oldChild);
