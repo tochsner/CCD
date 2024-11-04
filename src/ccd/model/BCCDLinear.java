@@ -15,6 +15,7 @@ import java.util.stream.IntStream;
 public class BCCDLinear extends BCCDParameterEstimator {
     List<Function<BCCDCladePartition, DoubleStream>> getObservations;
     List<Function<CladePartitionObservation, Double>> getObservation;
+    int numBetas;
 
     public BCCDLinear(
             List<Function<BCCDCladePartition, DoubleStream>> getObservations,
@@ -22,6 +23,7 @@ public class BCCDLinear extends BCCDParameterEstimator {
     ) {
         this.getObservation = getObservation;
         this.getObservations = getObservations;
+        this.numBetas = this.getObservation.size();
 
         if (this.getObservation.size() != this.getObservations.size())
             throw new IllegalArgumentException("Function array lengths must match.");
@@ -29,24 +31,28 @@ public class BCCDLinear extends BCCDParameterEstimator {
 
     @Override
     public void estimateParameters(List<BCCDCladePartition> partitions) {
-        double[] betas = getBetas(partitions);
+        double[][] betas = getBetas(partitions);
         double[] mus = getMus(partitions, betas);
         double[] sigmas = getSigmas(partitions, betas);
 
         for (int i = 0; i < partitions.size(); i++) {
             double mu = mus[i];
             double sigma = sigmas[i];
+            int pIdx = i;
 
             BCCDCladePartition partition = partitions.get(i);
-            partition.setLogMeanFunc(x -> mu + IntStream.range(0, betas.length).mapToDouble(j -> betas[j] * this.getObservation.get(j).apply(x)).sum());
+            partition.setLogMeanFunc(
+                    x -> mu + IntStream.range(0, this.numBetas).mapToDouble(j -> betas[pIdx][j] * this.getObservation.get(j).apply(x)).sum()
+            );
             partition.setLogVarianceFunc(x -> sigma);
         }
     }
 
-    public double[] getBetas(List<BCCDCladePartition> partitions) {
-        double[] betas = new double[this.getObservation.size()];
+    public double[][] getBetas(List<BCCDCladePartition> partitions) {
+        double[][] betas = new double[partitions.size()][this.numBetas];
 
-        for (int i = 0; i < this.getObservation.size(); i++) {
+        for (int i = 0; i < this.numBetas; i++) {
+            double beta = 0.0;
             int numObservations = 0;
 
             for (int j = 0; j < partitions.size(); j++) {
@@ -65,33 +71,36 @@ public class BCCDLinear extends BCCDParameterEstimator {
                     continue;
                 }
 
-                betas[i] += b1.length * partitionBeta;
+                beta += b1.length * partitionBeta;
                 numObservations += b1.length;
             }
 
-            betas[i] /= numObservations;
+            for (int j = 0; j < partitions.size(); j++) {
+                betas[j][i] = beta / numObservations;
+            }
         }
 
         return betas;
     }
 
-    public double[] getMus(List<BCCDCladePartition> partitions, double[] betas) {
+    public double[] getMus(List<BCCDCladePartition> partitions, double[][] betas) {
         double[] mus = new double[partitions.size()];
 
         for (int i = 0; i < partitions.size(); i++) {
             BCCDCladePartition partition = partitions.get(i);
+            int pIdx = i;
 
             mus[i] = partition.getObservedLogBranchLengthsOld().average().orElseThrow();
 
-            for (int j = 0; j < this.getObservation.size(); j++) {
-                mus[i] -= betas[j] * this.getObservations.get(j).apply(partition).average().orElseThrow();
+            for (int j = 0; j < this.numBetas; j++) {
+                mus[i] -= betas[pIdx][j] * this.getObservations.get(j).apply(partition).average().orElseThrow();
             }
         }
 
         return mus;
     }
 
-    public double[] getSigmas(List<BCCDCladePartition> partitions, double[] betas) {
+    public double[] getSigmas(List<BCCDCladePartition> partitions, double[][] betas) {
         double[] sigmas = new double[partitions.size()];
 
         List<Integer> idxWithoutEnoughData = new ArrayList<>();
@@ -101,6 +110,7 @@ public class BCCDLinear extends BCCDParameterEstimator {
 
         for (int i = 0; i < partitions.size(); i++) {
             BCCDCladePartition partition = partitions.get(i);
+            int pIdx = i;
 
             double[] b = partition.getObservedLogBranchLengthsOld().toArray();
             if (b.length < 2) {
@@ -109,8 +119,8 @@ public class BCCDLinear extends BCCDParameterEstimator {
             }
 
             double sigma = new Variance().evaluate(b);
-            for (int j = 0; j < this.getObservation.size(); j++) {
-                 sigma -= Math.pow(betas[j], 2) * new Variance().evaluate(this.getObservations.get(j).apply(partition).toArray());
+            for (int j = 0; j < this.numBetas; j++) {
+                sigma -= Math.pow(betas[pIdx][j], 2) * new Variance().evaluate(this.getObservations.get(j).apply(partition).toArray());
             }
 
             if (sigma <= 0.0) {
