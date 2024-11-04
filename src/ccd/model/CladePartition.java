@@ -351,6 +351,10 @@ public class CladePartition {
         }
     }
 
+    public double getLogCCP(Node vertex) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Sets the conditional clade probability (CCP) of this partition to the
      * given value. Intended use is to set the CCP manually when merging CCDs.

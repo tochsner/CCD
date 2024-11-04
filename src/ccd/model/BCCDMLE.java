@@ -2,7 +2,6 @@ package ccd.model;
 
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
-import org.apache.commons.math3.optim.PointValuePair;
 import org.apache.commons.math3.optim.SimpleValueChecker;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
@@ -46,8 +45,8 @@ public class BCCDMLE extends BCCDParameterEstimator {
                 if (sigma == 0.0) continue;
 
                 for (CladePartitionObservation observation : partition.getObservations()) {
-                    double b = observation.logMinBranchLength();
-                    double bDown = observation.logMinBranchLengthDown();
+                    double b = observation.logBranchLengthOld();
+                    double bDown = observation.logBranchLengthOldOld();
 
                     logMLE += 0.5 * (-Math.log(2*sigma*Math.PI) - Math.pow(b - mu - beta * bDown, 2) / sigma);
                 }
@@ -71,8 +70,8 @@ public class BCCDMLE extends BCCDParameterEstimator {
                 if (sigma == 0.0) continue;
 
                 for (CladePartitionObservation observation : partition.getObservations()) {
-                    double b = observation.logMinBranchLength();
-                    double bDown = observation.logMinBranchLengthDown();
+                    double b = observation.logBranchLengthOld();
+                    double bDown = observation.logBranchLengthOldOld();
 
                     // mu
                     gradient[i] += (b - mu - beta * bDown) / sigma;
@@ -96,7 +95,7 @@ public class BCCDMLE extends BCCDParameterEstimator {
         for (int i = 0; i < partitions.size(); i++) {
             BCCDCladePartition partition = partitions.get(i);
 
-            double[] branchLengths = partition.getObservedMinLogBranchLength().toArray();
+            double[] branchLengths = partition.getObservedLogBranchLengthsOld().toArray();
             initialParameters[i] = new Mean().evaluate(branchLengths);
             initialParameters[partitions.size() + i] = new Variance().evaluate(branchLengths);
         }
@@ -114,7 +113,7 @@ public class BCCDMLE extends BCCDParameterEstimator {
             double sigma = solution[partitions.size() + i];
 
             BCCDCladePartition partition = partitions.get(i);
-            partition.setLogMeanFunc(x -> mu + beta * x.logMinBranchLengthDown());
+            partition.setLogMeanFunc(x -> mu + beta * x.logBranchLengthOldOld());
             partition.setLogVarianceFunc(x -> sigma);
         }
     }
