@@ -192,7 +192,6 @@ public class BCCDCladePartition extends CladePartition {
 
     public double sampleMinBranchLength(Node vertex) {
         AbstractRealDistribution dist = this.getBranchLengthDistribution(vertex);
-
         return Math.exp(dist.sample());
     }
 }

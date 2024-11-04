@@ -127,7 +127,7 @@ public class BCCDLinear extends BCCDParameterEstimator {
             sigmas[i] = meanSigma;
         }
 
-        double lowSigma = new Percentile().evaluate(allSigmas.stream().mapToDouble(x -> x).toArray(), 25);
+        double lowSigma = new Percentile().evaluate(allSigmas.stream().mapToDouble(x -> x).toArray(), 10);
         for (int i : idxWithNegativeEstimate) {
             sigmas[i] = lowSigma;
         }
