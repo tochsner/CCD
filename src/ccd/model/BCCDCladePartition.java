@@ -2,11 +2,8 @@ package ccd.model;
 
 import beast.base.evolution.tree.Node;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
-import org.apache.commons.math3.distribution.LogNormalDistribution;
-import org.apache.commons.math3.distribution.ConstantRealDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
-import java.util.InvalidPropertiesFormatException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
@@ -180,14 +177,10 @@ public class BCCDCladePartition extends CladePartition {
     protected AbstractRealDistribution getBranchLengthDistribution(Node vertex) {
         CladePartitionObservation observation = createObservation(vertex);
 
-        double scale = this.getLogMeanFunc().apply(observation);
-        double shape = this.getLogVarianceFunc().apply(observation);
+        double logMean = this.getLogMeanFunc().apply(observation);
+        double logVariance = this.getLogVarianceFunc().apply(observation);
 
-        if (shape == 0.0) {
-            return new ConstantRealDistribution(scale);
-        } else {
-            return new NormalDistribution(scale, Math.sqrt(shape));
-        }
+        return new NormalDistribution(logMean, Math.sqrt(logVariance));
     }
 
     public double sampleMinBranchLength(Node vertex) {
