@@ -102,16 +102,15 @@ public class BCCDLinear extends BCCDParameterEstimator {
         for (int i = 0; i < partitions.size(); i++) {
             BCCDCladePartition partition = partitions.get(i);
 
-            double[] bs = partition.getObservedLogBranchLengthsOld().toArray();
-            double sigma = new Variance().evaluate(bs);
-
-            for (int j = 0; j < this.getObservation.size(); j++) {
-                 sigma -= Math.pow(betas[j], 2) * new Variance().evaluate(this.getObservations.get(j).apply(partition).toArray());
-            }
-
-            if (bs.length < 2) {
+            double[] b = partition.getObservedLogBranchLengthsOld().toArray();
+            if (b.length < 2) {
                 idxWithoutEnoughData.add(i);
                 continue;
+            }
+
+            double sigma = new Variance().evaluate(b);
+            for (int j = 0; j < this.getObservation.size(); j++) {
+                 sigma -= Math.pow(betas[j], 2) * new Variance().evaluate(this.getObservations.get(j).apply(partition).toArray());
             }
 
             if (sigma <= 0.0) {

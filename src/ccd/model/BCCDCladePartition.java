@@ -25,10 +25,10 @@ public class BCCDCladePartition extends CladePartition {
         double childHeight1 = vertex.getChild(0).getHeight();
         double childHeight2 = vertex.getChild(1).getHeight();
 
-        if (childHeight1 < childHeight2) {
-            return 1;
-        } else {
+        if (childHeight2 < childHeight1) {
             return 0;
+        } else {
+            return 1;
         }
     }
 
@@ -47,7 +47,8 @@ public class BCCDCladePartition extends CladePartition {
         double vertexHeight = vertex.getHeight();
         double childHeight = vertex.getChild(childIndex).getHeight();
 
-        if (vertexHeight - childHeight < 0) throw new IllegalArgumentException();
+        if (vertexHeight - childHeight <= 0)
+            throw new IllegalArgumentException();
 
         return Math.log(vertexHeight - childHeight);
     }
@@ -91,7 +92,6 @@ public class BCCDCladePartition extends CladePartition {
     private static CladePartitionObservation createObservation(Node vertex) {
         CladePartitionObservation observation = new CladePartitionObservation(
                 getLogBranchLengthOld(vertex),
-                getLogBranchLengthYoung(vertex),
                 getLogBranchLengthOldOld(vertex),
                 getLogBranchLengthOldYoung(vertex),
                 getLogBranchLengthOldSmall(vertex),
@@ -120,12 +120,10 @@ public class BCCDCladePartition extends CladePartition {
         return observations;
     }
 
+    /** -- Convenience getters - Convenience getters **/
+
     public DoubleStream getObservedLogBranchLengthsOld() {
         return this.getObservations().stream().mapToDouble(x -> x.logBranchLengthOld());
-    }
-
-    public DoubleStream getObservedLogBranchLengthsYoung() {
-        return this.getObservations().stream().mapToDouble(x -> x.logBranchLengthYoung());
     }
 
     public DoubleStream getObservedLogBranchLengthsOldOld() {
