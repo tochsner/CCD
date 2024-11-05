@@ -46,8 +46,8 @@ public class BCCDMLE extends BCCDParameterEstimator {
                 if (sigma == 0.0) continue;
 
                 for (CladePartitionObservation observation : partition.getObservations()) {
-                    double b = observation.logBranchLengthOld();
-                    double bDown = observation.logBranchLengthOldOld();
+                    double b = observation.branchLengthOld();
+                    double bDown = observation.branchLengthOldOld();
 
                     logMLE += 0.5 * (-Math.log(2*sigma*Math.PI) - Math.pow(b - mu - beta * bDown, 2) / sigma);
                 }
@@ -71,8 +71,8 @@ public class BCCDMLE extends BCCDParameterEstimator {
                 if (sigma == 0.0) continue;
 
                 for (CladePartitionObservation observation : partition.getObservations()) {
-                    double b = observation.logBranchLengthOld();
-                    double bDown = observation.logBranchLengthOldOld();
+                    double b = observation.branchLengthOld();
+                    double bDown = observation.branchLengthOldOld();
 
                     // mu
                     gradient[i] += (b - mu - beta * bDown) / sigma;
@@ -114,7 +114,7 @@ public class BCCDMLE extends BCCDParameterEstimator {
             double sigma = solution[partitions.size() + i];
 
             BCCDCladePartition partition = partitions.get(i);
-            partition.setDistributionFunc(x -> new NormalDistribution(mu + beta * x.logBranchLengthOldOld(), Math.sqrt(sigma)));
+            partition.setDistributionFunc(x -> new NormalDistribution(mu + beta * x.branchLengthOldOld(), Math.sqrt(sigma)));
         }
     }
 }

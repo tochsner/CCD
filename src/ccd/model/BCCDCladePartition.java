@@ -39,7 +39,7 @@ public class BCCDCladePartition extends CladePartition {
         }
     }
 
-    protected static double getLogBranchLength(Node vertex, int childIndex) {
+    protected static double getBranchLength(Node vertex, int childIndex) {
         double vertexHeight = vertex.getHeight();
         double childHeight = vertex.getChild(childIndex).getHeight();
 
@@ -49,53 +49,53 @@ public class BCCDCladePartition extends CladePartition {
         return vertexHeight - childHeight;
     }
 
-    protected static double getLogBranchLengthOld(Node vertex) {
+    protected static double getBranchLengthOld(Node vertex) {
         if (vertex.isLeaf()) return 0.0;
         int oldChild = getOldChildIndex(vertex);
-        return getLogBranchLength(vertex, oldChild);
+        return getBranchLength(vertex, oldChild);
     }
 
-    protected static double getLogBranchLengthYoung(Node vertex) {
+    protected static double getBranchLengthYoung(Node vertex) {
         if (vertex.isLeaf()) return 0.0;
         int youngChild = 1 - getOldChildIndex(vertex);
-        return getLogBranchLength(vertex, youngChild);
+        return getBranchLength(vertex, youngChild);
     }
 
-    protected static double getLogBranchLengthOldOld(Node vertex) {
+    protected static double getBranchLengthOldOld(Node vertex) {
         if (vertex.getLeft().isLeaf() || vertex.getRight().isLeaf()) return 0.0;
         Node oldChild = vertex.getChild(getOldChildIndex(vertex));
-        return getLogBranchLengthOld(oldChild);
+        return getBranchLengthOld(oldChild);
     }
 
-    protected static double getLogBranchLengthOldYoung(Node vertex) {
+    protected static double getBranchLengthOldYoung(Node vertex) {
         if (vertex.getLeft().isLeaf() || vertex.getRight().isLeaf()) return 0.0;
         Node oldChild = vertex.getChild(getOldChildIndex(vertex));
-        return getLogBranchLengthYoung(oldChild);
+        return getBranchLengthYoung(oldChild);
     }
 
-    protected static double getLogBranchLengthOldSmall(Node vertex) {
+    protected static double getBranchLengthOldSmall(Node vertex) {
         if (vertex.getLeft().isLeaf() || vertex.getRight().isLeaf()) return 0.0;
         Node oldChild = vertex.getChild(getOldChildIndex(vertex));
         if (oldChild.isLeaf()) return 0.0;
         int smallChild = getSmallChildIndex(oldChild);
-        return getLogBranchLength(oldChild, smallChild);
+        return getBranchLength(oldChild, smallChild);
     }
 
-    protected static double getLogBranchLengthOldBig(Node vertex) {
+    protected static double getBranchLengthOldBig(Node vertex) {
         if (vertex.getLeft().isLeaf() || vertex.getRight().isLeaf()) return 0.0;
         Node oldChild = vertex.getChild(getOldChildIndex(vertex));
         if (oldChild.isLeaf()) return 0.0;
         int bigChild = 1 - getSmallChildIndex(oldChild);
-        return getLogBranchLength(oldChild, bigChild);
+        return getBranchLength(oldChild, bigChild);
     }
 
     private static CladePartitionObservation createObservation(Node vertex) {
         CladePartitionObservation observation = new CladePartitionObservation(
-                getLogBranchLengthOld(vertex),
-                getLogBranchLengthOldOld(vertex),
-                getLogBranchLengthOldYoung(vertex),
-                getLogBranchLengthOldSmall(vertex),
-                getLogBranchLengthOldBig(vertex)
+                getBranchLengthOld(vertex),
+                getBranchLengthOldOld(vertex),
+                getBranchLengthOldYoung(vertex),
+                getBranchLengthOldSmall(vertex),
+                getBranchLengthOldBig(vertex)
         );
         return observation;
     }
@@ -122,24 +122,39 @@ public class BCCDCladePartition extends CladePartition {
 
     /** -- Convenience getters - Convenience getters **/
 
-    public DoubleStream getObservedLogBranchLengthsOld() {
-        return this.getObservations().stream().mapToDouble(x -> x.logBranchLengthOld());
+    public DoubleStream getObservedBranchLengthsOld() {
+        return this.getObservations().stream().mapToDouble(x -> x.branchLengthOld());
     }
 
-    public DoubleStream getObservedLogBranchLengthsOldOld() {
-        return this.getObservations().stream().mapToDouble(x -> x.logBranchLengthOldOld());
+    public DoubleStream getObservedBranchLengthsOldYoung() {
+        return this.getObservations().stream().mapToDouble(x -> x.branchLengthOldYoung());
+    }
+
+    public DoubleStream getObservedBranchLengthsOldSmall() {
+        return this.getObservations().stream().mapToDouble(x -> x.branchLengthOldSmall());
+    }
+
+    public DoubleStream getObservedBranchLengthsOldBig() {
+        return this.getObservations().stream().mapToDouble(x -> x.branchLengthOldBig());
+    }
+
+    public DoubleStream getObservedLogBranchLengthsOld() {
+        return this.getObservations().stream().mapToDouble(x -> Utils.logOrZero(x.branchLengthOld()));
     }
 
     public DoubleStream getObservedLogBranchLengthsOldYoung() {
-        return this.getObservations().stream().mapToDouble(x -> x.logBranchLengthOldYoung());
+        return this.getObservations().stream().mapToDouble(x -> Utils.logOrZero(x.branchLengthOldYoung()));
     }
 
     public DoubleStream getObservedLogBranchLengthsOldSmall() {
-        return this.getObservations().stream().mapToDouble(x -> x.logBranchLengthOldSmall());
+        return this.getObservations().stream().mapToDouble(x -> Utils.logOrZero(x.branchLengthOldSmall()));
     }
 
     public DoubleStream getObservedLogBranchLengthsOldBig() {
-        return this.getObservations().stream().mapToDouble(x -> x.logBranchLengthOldBig());
+        return this.getObservations().stream().mapToDouble(x -> Utils.logOrZero(x.branchLengthOldBig()));
+    }
+    public DoubleStream getObservedLogBranchLengthsOldOld() {
+        return this.getObservations().stream().mapToDouble(x -> Utils.logOrZero(x.branchLengthOldOld()));
     }
 
     /* -- DISTRIBUTION - DISTRIBUTION -- */
@@ -158,7 +173,7 @@ public class BCCDCladePartition extends CladePartition {
     public double getCCP(Node vertex) {
         double ccdCCP = super.getCCP();
 
-        double minBranchLength = getLogBranchLengthOld(vertex);
+        double minBranchLength = getBranchLengthOld(vertex);
 
         AbstractRealDistribution branchLengthDistribution = this.getBranchLengthDistribution(vertex);
         double branchProbability = branchLengthDistribution.density(minBranchLength);

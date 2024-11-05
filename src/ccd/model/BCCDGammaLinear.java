@@ -68,9 +68,9 @@ public class BCCDGammaLinear extends BCCDParameterEstimator {
                 continue;
             }
 
-            double b = partition.getObservedLogBranchLengthsOld().average().orElseThrow();
-            double logB = partition.getObservedLogBranchLengthsOld().map(x -> Math.log(x)).average().orElseThrow();
-            double bLogB = partition.getObservedLogBranchLengthsOld().map(x -> x * Math.log(x)).average().orElseThrow();
+            double b = partition.getObservedBranchLengthsOld().average().orElseThrow();
+            double logB = partition.getObservedLogBranchLengthsOld().average().orElseThrow();
+            double bLogB = partition.getObservedBranchLengthsOld().map(x -> x * Math.log(x)).average().orElseThrow();
 
             double scale = bLogB - b * logB;
 
@@ -97,7 +97,7 @@ public class BCCDGammaLinear extends BCCDParameterEstimator {
         for (int i = 0; i < partitions.size(); i++) {
             BCCDCladePartition partition = partitions.get(i);
 
-            double b = partition.getObservedLogBranchLengthsOld().average().orElseThrow();
+            double b = partition.getObservedBranchLengthsOld().average().orElseThrow();
 
             shapes[i] = b / scales[i];
         }

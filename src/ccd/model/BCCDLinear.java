@@ -14,23 +14,21 @@ import java.util.stream.IntStream;
 
 
 public class BCCDLinear extends BCCDParameterEstimator {
-    List<Function<BCCDCladePartition, DoubleStream>> getObservations;
     List<Function<CladePartitionObservation, Double>> getObservation;
     int numBetas;
     boolean useGlobalBeta;
 
     public BCCDLinear(
-            List<Function<BCCDCladePartition, DoubleStream>> getObservations,
             List<Function<CladePartitionObservation, Double>> getObservation,
             boolean useGlobalBeta
     ) {
         this.getObservation = getObservation;
-        this.getObservations = getObservations;
         this.useGlobalBeta = useGlobalBeta;
         this.numBetas = this.getObservation.size();
+    }
 
-        if (this.getObservation.size() != this.getObservations.size())
-            throw new IllegalArgumentException("Function array lengths must match.");
+    DoubleStream getObservations(int betaIdx, BCCDCladePartition partition) {
+        return partition.getObservations().stream().mapToDouble(x -> this.getObservation.get(betaIdx).apply(x));
     }
 
     @Override
@@ -46,7 +44,7 @@ public class BCCDLinear extends BCCDParameterEstimator {
 
             BCCDCladePartition partition = partitions.get(i);
             partition.setDistributionFunc(
-                    x -> new NormalDistribution(
+                    x -> new LogNormalDistribution(
                             mu + IntStream.range(0, this.numBetas).mapToDouble(j -> betas[pIdx][j] * this.getObservation.get(j).apply(x)).sum(),
                             Math.sqrt(sigma)
                     )
@@ -65,7 +63,7 @@ public class BCCDLinear extends BCCDParameterEstimator {
                 BCCDCladePartition partition = partitions.get(j);
 
                 double[] b1 = partition.getObservedLogBranchLengthsOld().toArray();
-                double[] b2 = this.getObservations.get(i).apply(partition).toArray();
+                double[] b2 = this.getObservations(i, partition).toArray();
 
                 if (b1.length < 2) {
                     continue;
@@ -105,7 +103,7 @@ public class BCCDLinear extends BCCDParameterEstimator {
             mus[i] = partition.getObservedLogBranchLengthsOld().average().orElseThrow();
 
             for (int j = 0; j < this.numBetas; j++) {
-                mus[i] -= betas[pIdx][j] * this.getObservations.get(j).apply(partition).average().orElseThrow();
+                mus[i] -= betas[pIdx][j] * this.getObservations(j, partition).average().orElseThrow();
             }
         }
 
@@ -132,7 +130,7 @@ public class BCCDLinear extends BCCDParameterEstimator {
 
             double sigma = new Variance().evaluate(b);
             for (int j = 0; j < this.numBetas; j++) {
-                sigma -= Math.pow(betas[pIdx][j], 2) * new Variance().evaluate(this.getObservations.get(j).apply(partition).toArray());
+                sigma -= Math.pow(betas[pIdx][j], 2) * new Variance().evaluate(this.getObservations(j, partition).toArray());
             }
 
             if (sigma <= 0.0) {

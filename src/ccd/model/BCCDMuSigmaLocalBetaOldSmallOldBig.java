@@ -5,8 +5,10 @@ import java.util.List;
 public class BCCDMuSigmaLocalBetaOldSmallOldBig extends BCCDLinear {
     public BCCDMuSigmaLocalBetaOldSmallOldBig() {
         super(
-                List.of(x -> x.getObservedLogBranchLengthsOldSmall(), x -> x.getObservedLogBranchLengthsOldBig()),
-                List.of(x -> x.logBranchLengthOldSmall(), x -> x.logBranchLengthOldBig()),
+                List.of(
+                        x -> Utils.logOrZero(x.branchLengthOldSmall()),
+                        x -> Utils.logOrZero(x.branchLengthOldBig())
+                ),
                 false
         );
     }

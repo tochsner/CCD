@@ -50,8 +50,8 @@ public class BCCDIterativeMLE extends BCCDMLE {
 
             double mu = 0;
             for (CladePartitionObservation observation : partition.getObservations()) {
-                double b = observation.logBranchLengthOld();
-                double bDown = observation.logBranchLengthOldOld();
+                double b = observation.branchLengthOld();
+                double bDown = observation.branchLengthOldOld();
 
                 mu += b - beta*bDown;
 
@@ -61,8 +61,8 @@ public class BCCDIterativeMLE extends BCCDMLE {
 
             double sigma = 0;
             for (CladePartitionObservation observation : partition.getObservations()) {
-                double b = observation.logBranchLengthOld();
-                double bDown = observation.logBranchLengthOldOld();
+                double b = observation.branchLengthOld();
+                double bDown = observation.branchLengthOldOld();
 
                 sigma += Math.pow(b - beta*bDown - mu, 2);
             }
@@ -86,8 +86,8 @@ public class BCCDIterativeMLE extends BCCDMLE {
             if (partition.getObservations().size() == 1) continue;
 
             for (CladePartitionObservation observation : partition.getObservations()) {
-                double b = observation.logBranchLengthOld();
-                double bDown = observation.logBranchLengthOldOld();
+                double b = observation.branchLengthOld();
+                double bDown = observation.branchLengthOldOld();
 
                 nominator += (b - mu) * bDown / sigma;
                 denominator += Math.pow(bDown, 2) / sigma;
