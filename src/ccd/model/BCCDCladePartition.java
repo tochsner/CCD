@@ -126,35 +126,8 @@ public class BCCDCladePartition extends CladePartition {
         return this.getObservations().stream().mapToDouble(x -> x.branchLengthOld());
     }
 
-    public DoubleStream getObservedBranchLengthsOldYoung() {
-        return this.getObservations().stream().mapToDouble(x -> x.branchLengthOldYoung());
-    }
-
-    public DoubleStream getObservedBranchLengthsOldSmall() {
-        return this.getObservations().stream().mapToDouble(x -> x.branchLengthOldSmall());
-    }
-
-    public DoubleStream getObservedBranchLengthsOldBig() {
-        return this.getObservations().stream().mapToDouble(x -> x.branchLengthOldBig());
-    }
-
     public DoubleStream getObservedLogBranchLengthsOld() {
         return this.getObservations().stream().mapToDouble(x -> Utils.logOrZero(x.branchLengthOld()));
-    }
-
-    public DoubleStream getObservedLogBranchLengthsOldYoung() {
-        return this.getObservations().stream().mapToDouble(x -> Utils.logOrZero(x.branchLengthOldYoung()));
-    }
-
-    public DoubleStream getObservedLogBranchLengthsOldSmall() {
-        return this.getObservations().stream().mapToDouble(x -> Utils.logOrZero(x.branchLengthOldSmall()));
-    }
-
-    public DoubleStream getObservedLogBranchLengthsOldBig() {
-        return this.getObservations().stream().mapToDouble(x -> Utils.logOrZero(x.branchLengthOldBig()));
-    }
-    public DoubleStream getObservedLogBranchLengthsOldOld() {
-        return this.getObservations().stream().mapToDouble(x -> Utils.logOrZero(x.branchLengthOldOld()));
     }
 
     /* -- DISTRIBUTION - DISTRIBUTION -- */
