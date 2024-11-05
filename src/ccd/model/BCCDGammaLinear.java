@@ -1,16 +1,10 @@
 package ccd.model;
 
-import org.apache.commons.math3.distribution.GammaDistribution;
-import org.apache.commons.math3.stat.correlation.Covariance;
-import org.apache.commons.math3.stat.descriptive.moment.Variance;
-import org.apache.commons.math3.stat.descriptive.rank.Percentile;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
 
 
 /**

@@ -107,10 +107,18 @@ public class BCCD extends AbstractCCD {
         double firstChildHeight = firstChild.getHeight();
         double secondChildHeight = secondChild.getHeight();
 
-        double minBranchLength = partition.sampleMinBranchLength(vertex);
+        double minBranchLength;
+        if (samplingStrategy == SamplingStrategy.Sampling) {
+            minBranchLength = partition.sampleMinBranchLength(vertex);
+        } else if (samplingStrategy == SamplingStrategy.MAP) {
+            minBranchLength = partition.getMAPBranchLength(vertex);
+        } else {
+            throw new AssertionError("This sampling strategy is not supported by BCCD.");
+        }
+
         double vertexHeight = Math.max(
-                firstChildHeight + minBranchLength,
-                secondChildHeight + minBranchLength
+            firstChildHeight + minBranchLength,
+            secondChildHeight + minBranchLength
         );
         vertex.setHeight(vertexHeight);
 

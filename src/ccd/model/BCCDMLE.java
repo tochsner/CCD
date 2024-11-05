@@ -1,6 +1,5 @@
 package ccd.model;
 
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.optim.InitialGuess;
 import org.apache.commons.math3.optim.MaxEval;
 import org.apache.commons.math3.optim.SimpleValueChecker;
@@ -114,7 +113,7 @@ public class BCCDMLE extends BCCDParameterEstimator {
             double sigma = solution[partitions.size() + i];
 
             BCCDCladePartition partition = partitions.get(i);
-            partition.setDistributionFunc(x -> new NormalDistribution(mu + beta * x.branchLengthOldOld(), Math.sqrt(sigma)));
+            partition.setDistributionFunc(x -> new LogNormalDistribution(mu + beta * x.branchLengthOldOld(), Math.sqrt(sigma)));
         }
     }
 }

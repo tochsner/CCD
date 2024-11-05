@@ -132,13 +132,13 @@ public class BCCDCladePartition extends CladePartition {
 
     /* -- DISTRIBUTION - DISTRIBUTION -- */
 
-    protected Function<CladePartitionObservation, AbstractRealDistribution> distributionFunc;
+    protected Function<CladePartitionObservation, BranchLengthDistribution> distributionFunc;
 
-    public Function<CladePartitionObservation, AbstractRealDistribution> getDistributionFunc() {
+    public Function<CladePartitionObservation, BranchLengthDistribution> getDistributionFunc() {
         return distributionFunc;
     }
 
-    public void setDistributionFunc(Function<CladePartitionObservation, AbstractRealDistribution> distributionFunc) {
+    public void setDistributionFunc(Function<CladePartitionObservation, BranchLengthDistribution> distributionFunc) {
         this.distributionFunc = distributionFunc;
     }
 
@@ -148,7 +148,7 @@ public class BCCDCladePartition extends CladePartition {
 
         double minBranchLength = getBranchLengthOld(vertex);
 
-        AbstractRealDistribution branchLengthDistribution = this.getBranchLengthDistribution(vertex);
+        BranchLengthDistribution branchLengthDistribution = this.getBranchLengthDistribution(vertex);
         double branchProbability = branchLengthDistribution.density(minBranchLength);
 
         return ccdCCP * branchProbability;
@@ -156,13 +156,19 @@ public class BCCDCladePartition extends CladePartition {
 
     /* -- Sampling - Sampling -- */
 
-    protected AbstractRealDistribution getBranchLengthDistribution(Node vertex) {
+    protected BranchLengthDistribution getBranchLengthDistribution(Node vertex) {
         CladePartitionObservation observation = createObservation(vertex);
         return this.getDistributionFunc().apply(observation);
     }
 
     public double sampleMinBranchLength(Node vertex) {
-        AbstractRealDistribution dist = this.getBranchLengthDistribution(vertex);
+        BranchLengthDistribution dist = this.getBranchLengthDistribution(vertex);
         return dist.sample();
+    }
+
+    /* -- MAP Tree - MAP Tree -- */
+    public double getMAPBranchLength(Node vertex) {
+        BranchLengthDistribution dist = this.getBranchLengthDistribution(vertex);
+        return dist.mode();
     }
 }
