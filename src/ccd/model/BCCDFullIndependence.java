@@ -5,6 +5,6 @@ import java.util.function.Function;
 
 public class BCCDFullIndependence extends BCCDLinear {
     public BCCDFullIndependence() {
-        super(new ArrayList<>(), new ArrayList<>());
+        super(new ArrayList<>(), new ArrayList<>(), true);
     }
 }

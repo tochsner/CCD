@@ -12,7 +12,8 @@ public class BCCDMuSigmaBetaOldSmallOldBig extends BCCDLinear {
     public BCCDMuSigmaBetaOldSmallOldBig() {
         super(
                 List.of(x -> x.getObservedLogBranchLengthsOldSmall(), x -> x.getObservedLogBranchLengthsOldBig()),
-                List.of(x -> x.logBranchLengthOldSmall(), x -> x.logBranchLengthOldBig())
+                List.of(x -> x.logBranchLengthOldSmall(), x -> x.logBranchLengthOldBig()),
+                true
         );
     }
 }

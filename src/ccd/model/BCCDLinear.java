@@ -16,13 +16,16 @@ public class BCCDLinear extends BCCDParameterEstimator {
     List<Function<BCCDCladePartition, DoubleStream>> getObservations;
     List<Function<CladePartitionObservation, Double>> getObservation;
     int numBetas;
+    boolean useGlobalBeta;
 
     public BCCDLinear(
             List<Function<BCCDCladePartition, DoubleStream>> getObservations,
-            List<Function<CladePartitionObservation, Double>> getObservation
+            List<Function<CladePartitionObservation, Double>> getObservation,
+            boolean useGlobalBeta
     ) {
         this.getObservation = getObservation;
         this.getObservations = getObservations;
+        this.useGlobalBeta = useGlobalBeta;
         this.numBetas = this.getObservation.size();
 
         if (this.getObservation.size() != this.getObservations.size())
@@ -71,12 +74,18 @@ public class BCCDLinear extends BCCDParameterEstimator {
                     continue;
                 }
 
-                beta += b1.length * partitionBeta;
-                numObservations += b1.length;
+                if (this.useGlobalBeta) {
+                    beta += b1.length * partitionBeta;
+                    numObservations += b1.length;
+                } else {
+                    betas[j][i] = partitionBeta;
+                }
             }
 
-            for (int j = 0; j < partitions.size(); j++) {
-                betas[j][i] = beta / numObservations;
+            if (this.useGlobalBeta) {
+                for (int j = 0; j < partitions.size(); j++) {
+                    betas[j][i] = beta / numObservations;
+                }
             }
         }
 
