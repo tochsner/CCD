@@ -46,7 +46,7 @@ public class BCCDCladePartition extends CladePartition {
         if (vertexHeight - childHeight <= 0)
             throw new IllegalArgumentException();
 
-        return Math.log(vertexHeight - childHeight);
+        return vertexHeight - childHeight;
     }
 
     protected static double getLogBranchLengthOld(Node vertex) {
@@ -175,6 +175,6 @@ public class BCCDCladePartition extends CladePartition {
 
     public double sampleMinBranchLength(Node vertex) {
         AbstractRealDistribution dist = this.getBranchLengthDistribution(vertex);
-        return Math.exp(dist.sample());
+        return dist.sample();
     }
 }
