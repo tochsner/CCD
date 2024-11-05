@@ -5,21 +5,21 @@ import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.descriptive.moment.Variance;
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 
-import java.util.function.Function;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 
-public class BCCDLinear extends BCCDParameterEstimator {
+public class BCCDGammaLinear extends BCCDParameterEstimator {
     List<Function<BCCDCladePartition, DoubleStream>> getObservations;
     List<Function<CladePartitionObservation, Double>> getObservation;
     int numBetas;
     boolean useGlobalBeta;
 
-    public BCCDLinear(
+    public BCCDGammaLinear(
             List<Function<BCCDCladePartition, DoubleStream>> getObservations,
             List<Function<CladePartitionObservation, Double>> getObservation,
             boolean useGlobalBeta

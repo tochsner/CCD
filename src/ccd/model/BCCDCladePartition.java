@@ -2,7 +2,6 @@ package ccd.model;
 
 import beast.base.evolution.tree.Node;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -145,23 +144,14 @@ public class BCCDCladePartition extends CladePartition {
 
     /* -- DISTRIBUTION - DISTRIBUTION -- */
 
-    protected Function<CladePartitionObservation, Double> logMeanFunc;
-    protected Function<CladePartitionObservation, Double> logVarianceFunc;
+    protected Function<CladePartitionObservation, AbstractRealDistribution> distributionFunc;
 
-    public Function<CladePartitionObservation, Double> getLogMeanFunc() {
-        return logMeanFunc;
+    public Function<CladePartitionObservation, AbstractRealDistribution> getDistributionFunc() {
+        return distributionFunc;
     }
 
-    public void setLogMeanFunc(Function<CladePartitionObservation, Double> logMeanFunc) {
-        this.logMeanFunc = logMeanFunc;
-    }
-
-    public Function<CladePartitionObservation, Double> getLogVarianceFunc() {
-        return logVarianceFunc;
-    }
-
-    public void setLogVarianceFunc(Function<CladePartitionObservation, Double> logVarianceFunc) {
-        this.logVarianceFunc = logVarianceFunc;
+    public void setDistributionFunc(Function<CladePartitionObservation, AbstractRealDistribution> distributionFunc) {
+        this.distributionFunc = distributionFunc;
     }
 
     @Override
@@ -180,11 +170,7 @@ public class BCCDCladePartition extends CladePartition {
 
     protected AbstractRealDistribution getBranchLengthDistribution(Node vertex) {
         CladePartitionObservation observation = createObservation(vertex);
-
-        double logMean = this.getLogMeanFunc().apply(observation);
-        double logVariance = this.getLogVarianceFunc().apply(observation);
-
-        return new NormalDistribution(logMean, Math.sqrt(logVariance));
+        return this.getDistributionFunc().apply(observation);
     }
 
     public double sampleMinBranchLength(Node vertex) {
