@@ -13,24 +13,25 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 
+/**
+ * Not finished yet.
+ */
 public class BCCDGammaLinear extends BCCDParameterEstimator {
-    List<Function<BCCDCladePartition, DoubleStream>> getObservations;
     List<Function<CladePartitionObservation, Double>> getObservation;
     int numBetas;
     boolean useGlobalBeta;
 
     public BCCDGammaLinear(
-            List<Function<BCCDCladePartition, DoubleStream>> getObservations,
             List<Function<CladePartitionObservation, Double>> getObservation,
             boolean useGlobalBeta
     ) {
         this.getObservation = getObservation;
-        this.getObservations = getObservations;
-        if (this.getObservation.size() != this.getObservations.size())
-            throw new IllegalArgumentException("Function array lengths must match.");
-
         this.useGlobalBeta = useGlobalBeta;
         this.numBetas = this.getObservation.size();
+    }
+
+    DoubleStream getObservations(int betaIdx, BCCDCladePartition partition) {
+        return partition.getObservations().stream().mapToDouble(x -> this.getObservation.get(betaIdx).apply(x));
     }
 
     @Override
