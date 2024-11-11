@@ -8,6 +8,6 @@ import java.util.List;
  */
 public class BCCDGammaMuSigmaBetaOldOld extends BCCDGammaLinear {
     public BCCDGammaMuSigmaBetaOldOld() {
-        super(List.of(x -> x.branchLengthOldOld()), true);
+        super(List.of(x -> x.branchLengthOldOld()), false);
     }
 }

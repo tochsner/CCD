@@ -43,7 +43,7 @@ public class BCCDCladePartition extends CladePartition {
         double vertexHeight = vertex.getHeight();
         double childHeight = vertex.getChild(childIndex).getHeight();
 
-        if (vertexHeight - childHeight <= 0)
+        if (vertexHeight - childHeight < 0)
             throw new IllegalArgumentException();
 
         return vertexHeight - childHeight;
@@ -53,6 +53,12 @@ public class BCCDCladePartition extends CladePartition {
         if (vertex.isLeaf()) return 0.0;
         int oldChild = getOldChildIndex(vertex);
         return getBranchLength(vertex, oldChild);
+    }
+
+    protected static double getHeightOld(Node vertex) {
+        if (vertex.isLeaf()) return 0.0;
+        int oldChild = getOldChildIndex(vertex);
+        return vertex.getChild(oldChild).getHeight();
     }
 
     protected static double getBranchLengthYoung(Node vertex) {
@@ -95,7 +101,8 @@ public class BCCDCladePartition extends CladePartition {
                 getBranchLengthOldOld(vertex),
                 getBranchLengthOldYoung(vertex),
                 getBranchLengthOldSmall(vertex),
-                getBranchLengthOldBig(vertex)
+                getBranchLengthOldBig(vertex),
+                getHeightOld(vertex)
         );
         return observation;
     }

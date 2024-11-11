@@ -5,5 +5,6 @@ public record CladePartitionObservation(
         double branchLengthOldOld,
         double branchLengthOldYoung,
         double branchLengthOldSmall,
-        double branchLengthOldBig
+        double branchLengthOldBig,
+        double heightOld
 ) { }

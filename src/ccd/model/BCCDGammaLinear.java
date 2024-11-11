@@ -1,15 +1,17 @@
 package ccd.model;
 
+import org.apache.commons.math3.stat.correlation.Covariance;
+import org.apache.commons.math3.stat.descriptive.moment.Variance;
+import org.apache.commons.math3.stat.descriptive.rank.Percentile;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 
-/**
- * Not finished yet.
- */
 public class BCCDGammaLinear extends BCCDParameterEstimator {
     List<Function<CladePartitionObservation, Double>> getObservation;
     int numBetas;
@@ -24,6 +26,10 @@ public class BCCDGammaLinear extends BCCDParameterEstimator {
         this.numBetas = this.getObservation.size();
     }
 
+    DoubleStream getLogObservations(int betaIdx, BCCDCladePartition partition) {
+        return partition.getObservations().stream().mapToDouble(x -> Utils.logOrZero(this.getObservation.get(betaIdx).apply(x)));
+    }
+
     DoubleStream getObservations(int betaIdx, BCCDCladePartition partition) {
         return partition.getObservations().stream().mapToDouble(x -> this.getObservation.get(betaIdx).apply(x));
     }
@@ -31,25 +37,110 @@ public class BCCDGammaLinear extends BCCDParameterEstimator {
     @Override
     public void estimateParameters(List<BCCDCladePartition> partitions) {
         double[][] betas = getBetas(partitions);
-        double[] scales = getScales(partitions, betas);
-        double[] shapes = getShapes(partitions, scales, betas);
+        double[] shapes = getShapes(partitions, betas);
+        double[] scales = getScales(partitions, betas, shapes);
 
         for (int i = 0; i < partitions.size(); i++) {
+            int pIdx = i;
             double shape = shapes[i];
             double scale = scales[i];
 
             BCCDCladePartition partition = partitions.get(i);
             partition.setDistributionFunc(
-                    x -> new GammaDistribution(shape, scale)
+                    x -> new GammaDistribution(
+                            shape,
+                            scale * Math.exp(IntStream.range(0, this.numBetas).mapToDouble(j ->  Utils.logOrZero(this.getObservation.get(j).apply(x)) * betas[pIdx][j]).sum())
+                    )
             );
         }
     }
 
     public double[][] getBetas(List<BCCDCladePartition> partitions) {
-        return new double[partitions.size()][this.numBetas];
+        double[][] betas = new double[partitions.size()][this.numBetas];
+
+        for (int i = 0; i < this.numBetas; i++) {
+            double beta = 0.0;
+            int numObservations = 0;
+
+            for (int j = 0; j < partitions.size(); j++) {
+                BCCDCladePartition partition = partitions.get(j);
+
+                double[] b1 = partition.getObservedLogBranchLengthsOld().toArray();
+                double[] b2 = this.getLogObservations(i, partition).toArray();
+
+                if (b1.length < 2) {
+                    continue;
+                }
+
+                double partitionBeta = new Covariance().covariance(b1, b2) / new Variance().evaluate(b2);
+
+                if (Double.isNaN(partitionBeta)) {
+                    continue;
+                }
+
+                if (this.useGlobalBeta) {
+                    beta += b1.length * partitionBeta;
+                    numObservations += b1.length;
+                } else {
+                    betas[j][i] = partitionBeta;
+                }
+            }
+
+            if (this.useGlobalBeta) {
+                for (int j = 0; j < partitions.size(); j++) {
+                    betas[j][i] = beta / numObservations;
+                }
+            }
+        }
+
+        return betas;
     }
 
-    public double[] getScales(List<BCCDCladePartition> partitions, double[][] betas) {
+    public double[] getShapes(List<BCCDCladePartition> partitions, double[][] betas) {
+        double[] shapes = new double[partitions.size()];
+        List<Double> allShapes = new LinkedList<>();
+
+        List<Integer> idxWithoutEnoughData = new ArrayList<>();
+        List<Integer> idxWithNegativeEstimate = new ArrayList<>();
+
+        for (int i = 0; i < partitions.size(); i++) {
+            BCCDCladePartition partition = partitions.get(i);
+            int pIdx = i;
+
+            double[] b = partition.getObservedLogBranchLengthsOld().toArray();
+            if (b.length < 2) {
+                idxWithoutEnoughData.add(i);
+                continue;
+            }
+
+            double trigammaShape = new Variance().evaluate(b);
+            for (int j = 0; j < this.numBetas; j++) {
+                trigammaShape -= Math.pow(betas[pIdx][j], 2) * new Variance().evaluate(this.getLogObservations(j, partition).toArray());
+            }
+
+            if (trigammaShape <= 0.0) {
+                idxWithNegativeEstimate.add(i);
+                continue;
+            }
+            double shape = InverseTrigamma.value(trigammaShape);
+
+            shapes[i] = shape;
+            allShapes.add(shape);
+        }
+
+        double meanShape = allShapes.stream().reduce((a, b) -> a + b).get() / partitions.size() * 2;
+        for (int i : idxWithoutEnoughData) {
+            shapes[i] = meanShape;
+        }
+        meanShape /= 4;
+        for (int i : idxWithNegativeEstimate) {
+            shapes[i] = meanShape;
+        }
+
+        return shapes;
+    }
+
+    public double[] getScales(List<BCCDCladePartition> partitions, double[][] betas, double[] shapes) {
         double[] scales = new double[partitions.size()];
 
         List<Integer> idxWithoutEnoughData = new ArrayList<>();
@@ -58,16 +149,13 @@ public class BCCDGammaLinear extends BCCDParameterEstimator {
         for (int i = 0; i < partitions.size(); i++) {
             BCCDCladePartition partition = partitions.get(i);
 
-            if (partition.getNumberOfOccurrences() < 2) {
-                idxWithoutEnoughData.add(i);
-                continue;
+            double scale = partition.getObservedBranchLengthsOld().average().orElseThrow() / shapes[i];
+
+            for (int j = 0; j < this.numBetas; j++) {
+                final int pIdx = i;
+                final int pBeta = j;
+                scale /= this.getObservations(j, partition).map(x -> Math.exp(betas[pIdx][pBeta] * Utils.logOrZero(x))).average().orElseThrow();
             }
-
-            double b = partition.getObservedBranchLengthsOld().average().orElseThrow();
-            double logB = partition.getObservedLogBranchLengthsOld().average().orElseThrow();
-            double bLogB = partition.getObservedBranchLengthsOld().map(x -> x * Math.log(x)).average().orElseThrow();
-
-            double scale = bLogB - b * logB;
 
             if (scale == 0.0) {
                 idxWithoutEnoughData.add(i);
@@ -84,19 +172,5 @@ public class BCCDGammaLinear extends BCCDParameterEstimator {
         }
 
         return scales;
-    }
-
-    public double[] getShapes(List<BCCDCladePartition> partitions, double[] scales, double[][] betas) {
-        double[] shapes = new double[partitions.size()];
-
-        for (int i = 0; i < partitions.size(); i++) {
-            BCCDCladePartition partition = partitions.get(i);
-
-            double b = partition.getObservedBranchLengthsOld().average().orElseThrow();
-
-            shapes[i] = b / scales[i];
-        }
-
-        return shapes;
     }
 }
