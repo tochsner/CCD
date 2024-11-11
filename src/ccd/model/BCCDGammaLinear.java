@@ -143,8 +143,10 @@ public class BCCDGammaLinear extends BCCDParameterEstimator {
         for (int i : idxWithoutEnoughData) {
             shapes[i] = meanShape;
         }
+
+        double lowShape = new Percentile().evaluate(allShapes.stream().mapToDouble(x -> x).toArray(), 10);
         for (int i : idxWithNegativeEstimate) {
-            shapes[i] = meanShape;
+            shapes[i] = lowShape;
         }
 
         return shapes;
