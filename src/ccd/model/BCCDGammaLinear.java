@@ -17,6 +17,17 @@ public class BCCDGammaLinear extends BCCDParameterEstimator {
     int numBetas;
     boolean useGlobalBeta;
 
+    public BCCDGammaLinear() {
+        this(new ArrayList<>(), true);
+    }
+
+    public BCCDGammaLinear(
+            Function<CladePartitionObservation, Double> getObservation,
+            boolean useGlobalBeta
+    ) {
+        this(List.of(getObservation), useGlobalBeta);
+    }
+
     public BCCDGammaLinear(
             List<Function<CladePartitionObservation, Double>> getObservation,
             boolean useGlobalBeta
@@ -128,11 +139,10 @@ public class BCCDGammaLinear extends BCCDParameterEstimator {
             allShapes.add(shape);
         }
 
-        double meanShape = allShapes.stream().reduce((a, b) -> a + b).get() / partitions.size() * 2;
+        double meanShape = allShapes.stream().reduce((a, b) -> a + b).get() / partitions.size();
         for (int i : idxWithoutEnoughData) {
             shapes[i] = meanShape;
         }
-        meanShape /= 4;
         for (int i : idxWithNegativeEstimate) {
             shapes[i] = meanShape;
         }

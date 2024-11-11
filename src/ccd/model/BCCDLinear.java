@@ -22,6 +22,17 @@ public class BCCDLinear extends BCCDParameterEstimator {
     int numBetas;
     boolean useGlobalBeta;
 
+    public BCCDLinear() {
+        this(new ArrayList<>(), true);
+    }
+
+    public BCCDLinear(
+            Function<CladePartitionObservation, Double> getObservation,
+            boolean useGlobalBeta
+    ) {
+        this(List.of(getObservation), useGlobalBeta);
+    }
+
     public BCCDLinear(
             List<Function<CladePartitionObservation, Double>> getObservation,
             boolean useGlobalBeta
