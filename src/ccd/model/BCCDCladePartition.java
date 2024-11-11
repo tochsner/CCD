@@ -55,10 +55,19 @@ public class BCCDCladePartition extends CladePartition {
         return getBranchLength(vertex, oldChild);
     }
 
+    public static double getMaxDistanceToLeaf(Node vertex) {
+        if (vertex.isLeaf()) return 0.0;
+
+        double firstHeight = getBranchLength(vertex, 0) + getMaxDistanceToLeaf(vertex.getChild(0));
+        double secondHeight = getBranchLength(vertex, 1) + getMaxDistanceToLeaf(vertex.getChild(1));
+
+        return Math.max(firstHeight, secondHeight);
+    }
+
     protected static double getHeightOld(Node vertex) {
         if (vertex.isLeaf()) return 0.0;
         int oldChild = getOldChildIndex(vertex);
-        return vertex.getChild(oldChild).getHeight();
+        return getMaxDistanceToLeaf(vertex.getChild(oldChild));
     }
 
     protected static double getBranchLengthYoung(Node vertex) {
