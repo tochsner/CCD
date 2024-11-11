@@ -50,8 +50,9 @@ public class BCCD extends AbstractCCD {
 
     @Override
     public Tree sampleTree() {
-        Tree topology = sampleTree(HeightSettingStrategy.None);
-        return topology;
+        Tree tree = sampleTree(HeightSettingStrategy.None);
+        this.estimator.estimateMAPBranches(tree, this.getAllPartitions());
+        return tree;
     }
 
     protected Node getVertexBasedOnStrategy(
