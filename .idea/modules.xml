@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/../BeastFX/BeastFX.iml" filepath="$PROJECT_DIR$/../BeastFX/BeastFX.iml" />
       <module fileurl="file://$PROJECT_DIR$/CCD.iml" filepath="$PROJECT_DIR$/CCD.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../CCP/CCP.iml" filepath="$PROJECT_DIR$/../CCP/CCP.iml" />
       <module fileurl="file://$PROJECT_DIR$/../beast2/beast2.iml" filepath="$PROJECT_DIR$/../beast2/beast2.iml" />
     </modules>
   </component>

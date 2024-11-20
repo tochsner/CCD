@@ -138,8 +138,13 @@ public class BCCD extends AbstractCCD {
             cladeInBits.set(index);
 
             Clade clade = this.cladeMapping.get(cladeInBits);
+            vertex.setHeight(clade.getMeanOccurredHeight());
+
             return clade;
         }
+
+        // we set it to some high number such that the calculation below don't fail
+        vertex.setHeight(Double.MAX_VALUE);
 
         Node firstChild = vertex.getChild(0);
         Node secondChild = vertex.getChild(1);

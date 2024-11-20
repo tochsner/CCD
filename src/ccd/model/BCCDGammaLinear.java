@@ -135,6 +135,11 @@ public class BCCDGammaLinear extends BCCDParameterEstimator {
             }
             double shape = InverseTrigamma.value(trigammaShape);
 
+            if (shape < 0) {
+                idxWithNegativeEstimate.add(i);
+                continue;
+            }
+
             shapes[i] = shape;
             allShapes.add(shape);
         }
