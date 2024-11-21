@@ -1,4 +1,4 @@
-package ccd.model;
+package ccd.model.BCCD;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

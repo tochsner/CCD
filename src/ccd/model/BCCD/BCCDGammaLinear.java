@@ -1,5 +1,6 @@
-package ccd.model;
+package ccd.model.BCCD;
 
+import ccd.model.CladePartitionObservation;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.descriptive.moment.Variance;
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;

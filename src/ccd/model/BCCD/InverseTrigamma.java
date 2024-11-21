@@ -1,4 +1,4 @@
-package ccd.model;
+package ccd.model.BCCD;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.solvers.IllinoisSolver;

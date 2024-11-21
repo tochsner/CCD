@@ -1,5 +1,6 @@
-package ccd.model;
+package ccd.model.BCCD;
 
+import ccd.model.CladePartitionObservation;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.exception.NoBracketingException;
 import org.apache.commons.math3.optim.InitialGuess;

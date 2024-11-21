@@ -1,4 +1,9 @@
-package ccd.model;
+package ccd.model.BCCD;
+
+import ccd.model.AbstractCCD;
+import ccd.model.BitSet;
+import ccd.model.Clade;
+import ccd.model.CladePartition;
 
 public class BCCDClade extends Clade {
     public BCCDClade(BitSet cladeInBits, AbstractCCD abstractCCD) {

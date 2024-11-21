@@ -1,7 +1,8 @@
-package ccd.model;
+package ccd.model.BCCD;
 
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
+import ccd.model.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;

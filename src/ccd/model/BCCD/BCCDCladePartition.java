@@ -1,7 +1,8 @@
-package ccd.model;
+package ccd.model.BCCD;
 
 import beast.base.evolution.tree.Node;
-import org.apache.commons.math3.distribution.AbstractRealDistribution;
+import ccd.model.CladePartition;
+import ccd.model.CladePartitionObservation;
 
 import java.util.LinkedList;
 import java.util.List;

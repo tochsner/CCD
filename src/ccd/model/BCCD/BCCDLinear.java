@@ -1,6 +1,6 @@
-package ccd.model;
+package ccd.model.BCCD;
 
-import beast.base.evolution.tree.Tree;
+import ccd.model.CladePartitionObservation;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;

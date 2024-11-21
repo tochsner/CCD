@@ -1,7 +1,6 @@
-package ccd.model;
+package ccd.model.BCCD;
 
 import java.util.ArrayList;
-import java.util.function.Function;
 
 public class BCCDFullIndependence extends BCCDLinear {
     public BCCDFullIndependence() {
