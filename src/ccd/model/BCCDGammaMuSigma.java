@@ -6,7 +6,8 @@ import java.util.List;
 
 public class BCCDGammaMuSigma extends BCCDParameterEstimator {
     @Override
-    public void estimateParameters(List<BCCDCladePartition> partitions) {
+    public void estimateParameters(BCCD bccd) {
+        List<BCCDCladePartition> partitions = bccd.getAllPartitions();
         double[] scales = getScales(partitions);
         double[] shapes = getShapes(partitions, scales);
 

@@ -46,7 +46,9 @@ public class BCCDGammaLinear extends BCCDParameterEstimator {
     }
 
     @Override
-    public void estimateParameters(List<BCCDCladePartition> partitions) {
+    public void estimateParameters(BCCD bccd) {
+        List<BCCDCladePartition> partitions = bccd.getAllPartitions();
+
         double[][] betas = getBetas(partitions);
         double[] shapes = getShapes(partitions, betas);
         double[] scales = getScales(partitions, betas, shapes);

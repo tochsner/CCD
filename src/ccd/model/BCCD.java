@@ -23,7 +23,7 @@ public class BCCD extends AbstractCCD {
 
     @Override
     public void initialize() {
-        this.estimator.estimateParameters(this.getAllPartitions());
+        this.estimator.estimateParameters(this);
     }
 
     @Override

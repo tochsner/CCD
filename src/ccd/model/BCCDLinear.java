@@ -47,7 +47,9 @@ public class BCCDLinear extends BCCDParameterEstimator {
     }
 
     @Override
-    public void estimateParameters(List<BCCDCladePartition> partitions) {
+    public void estimateParameters(BCCD bccd) {
+        List<BCCDCladePartition> partitions = bccd.getAllPartitions();
+
         double[][] betas = this.getBetas(partitions);
         double[] mus = this.getMus(partitions, betas);
         double[] sigmas = this.getSigmas(partitions, betas);
