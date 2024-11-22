@@ -1,4 +1,4 @@
-package ccd.model.BCCD;
+package ccd.model;
 
 public class Utils {
     public static double logOrZero(double value) {

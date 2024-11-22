@@ -1,4 +1,4 @@
-package ccd.model.BCCD;
+package ccd.model;
 
 public class GammaDistribution extends BranchLengthDistribution {
     org.apache.commons.math3.distribution.GammaDistribution gammaDistribution;

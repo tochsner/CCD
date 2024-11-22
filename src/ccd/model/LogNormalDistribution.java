@@ -1,4 +1,4 @@
-package ccd.model.BCCD;
+package ccd.model;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;

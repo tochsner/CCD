@@ -1,4 +1,4 @@
-package ccd.model.BCCD;
+package ccd.model;
 
 import ccd.model.AbstractCCD;
 import ccd.model.BitSet;

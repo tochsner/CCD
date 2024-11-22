@@ -1,4 +1,4 @@
-package ccd.model.BCCD;
+package ccd.model;
 
 public abstract class BranchLengthDistribution {
     public abstract double sample();

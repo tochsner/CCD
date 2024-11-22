@@ -1,4 +1,4 @@
-package ccd.model.BCCD;
+package ccd.model;
 
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;

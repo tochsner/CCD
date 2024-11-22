@@ -1,4 +1,4 @@
-package ccd.model.BCCD;
+package ccd.model;
 
 import ccd.model.CladePartitionObservation;
 import org.apache.commons.math3.stat.correlation.Covariance;

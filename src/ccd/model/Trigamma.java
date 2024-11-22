@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ccd.model.BCCD;
+package ccd.model;
 
 public final class Trigamma {
     /** C limit. */
