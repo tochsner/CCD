@@ -4,7 +4,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class BCCDGammaMuSigma extends BCCDParameterEstimator {
+public class BCCDGammaMuSigma extends ParameterEstimator<BCCD> {
+    @Override
+    public BCCD getCCD(int numLeaves, boolean storeBaseTrees) {
+        return new BCCD(numLeaves, storeBaseTrees, this);
+    }
+
     @Override
     public void estimateParameters(BCCD bccd) {
         List<BCCDCladePartition> partitions = bccd.getAllPartitions();

@@ -13,14 +13,14 @@ public class BCCD extends AbstractCCD {
 
     /* -- CONSTRUCTORS & CONSTRUCTION METHODS -- */
 
-    public BCCD(int numLeaves, boolean storeBaseTrees, BCCDParameterEstimator estimator) {
+    public BCCD(int numLeaves, boolean storeBaseTrees, ParameterEstimator<BCCD> estimator) {
         super(numLeaves, storeBaseTrees);
         this.estimator = estimator;
     }
 
     /* -- INITIALIZATION -- */
 
-    BCCDParameterEstimator estimator;
+    ParameterEstimator<BCCD> estimator;
 
     @Override
     public void initialize() {
@@ -119,14 +119,15 @@ public class BCCD extends AbstractCCD {
         }
 
         double vertexHeight = Math.max(
-            firstChildHeight + minBranchLength,
-            secondChildHeight + minBranchLength
+                firstChildHeight + minBranchLength,
+                secondChildHeight + minBranchLength
         );
         vertex.setHeight(vertexHeight);
 
         return vertex;
     }
 
+    @Override
     public void sampleBranchLengths(Tree tree) {
         this.sampleBranchLengths(tree.getRoot());
     }

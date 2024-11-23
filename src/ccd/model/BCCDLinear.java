@@ -1,6 +1,5 @@
 package ccd.model;
 
-import ccd.model.CladePartitionObservation;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -17,7 +16,7 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 
-public class BCCDLinear extends BCCDParameterEstimator {
+public class BCCDLinear extends ParameterEstimator<BCCD> {
     List<Function<CladePartitionObservation, Double>> getObservation;
     int numBetas;
     boolean useGlobalBeta;
@@ -40,6 +39,11 @@ public class BCCDLinear extends BCCDParameterEstimator {
         this.getObservation = getObservation;
         this.useGlobalBeta = useGlobalBeta;
         this.numBetas = this.getObservation.size();
+    }
+
+    @Override
+    public BCCD getCCD(int numLeaves, boolean storeBaseTrees) {
+        return new BCCD(numLeaves, storeBaseTrees, this);
     }
 
     DoubleStream getObservations(int betaIdx, BCCDCladePartition partition) {

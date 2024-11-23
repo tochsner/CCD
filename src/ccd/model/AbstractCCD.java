@@ -4,6 +4,7 @@ import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 import beastfx.app.treeannotator.TreeAnnotator.TreeSet;
 
+import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.math.BigInteger;
@@ -810,6 +811,10 @@ public abstract class AbstractCCD implements ITreeDistribution {
     @Override
     public Tree sampleTree(HeightSettingStrategy heightStrategy) {
         return getTreeBasedOnStrategy(SamplingStrategy.Sampling, heightStrategy);
+    }
+
+    public void sampleBranchLengths(Tree tree) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 
-public class BCCDGammaLinear extends BCCDParameterEstimator {
+public class BCCDGammaLinear extends ParameterEstimator<BCCD> {
     List<Function<CladePartitionObservation, Double>> getObservation;
     int numBetas;
     boolean useGlobalBeta;
@@ -36,6 +36,11 @@ public class BCCDGammaLinear extends BCCDParameterEstimator {
         this.getObservation = getObservation;
         this.useGlobalBeta = useGlobalBeta;
         this.numBetas = this.getObservation.size();
+    }
+
+    @Override
+    public BCCD getCCD(int numLeaves, boolean storeBaseTrees) {
+        return new BCCD(numLeaves, storeBaseTrees, this);
     }
 
     DoubleStream getLogObservations(int betaIdx, BCCDCladePartition partition) {

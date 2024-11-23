@@ -96,8 +96,8 @@ public class SBCCDCladePartition extends CladePartition {
         BranchLengthDistribution firstBranchLengthDistribution = this.getFirstBranchDistribution();
         BranchLengthDistribution secondBranchLengthDistribution = this.getSecondBranchDistribution();
 
-        double firstBranchProbability = firstBranchLengthDistribution.density(firstBranchLength / subTreeHeight);
-        double secondBranchProbability = secondBranchLengthDistribution.density(secondBranchLength / subTreeHeight);
+        double firstBranchProbability = firstBranchLengthDistribution.density(firstBranchLength / subTreeHeight) / subTreeHeight;
+        double secondBranchProbability = secondBranchLengthDistribution.density(secondBranchLength / subTreeHeight) / subTreeHeight;
 
         return ccdCCP * firstBranchProbability * secondBranchProbability;
     }
@@ -112,5 +112,17 @@ public class SBCCDCladePartition extends CladePartition {
     public double sampleSecondBranchLength(double subTreeHeight) {
         BranchLengthDistribution dist = this.getSecondBranchDistribution();
         return subTreeHeight * dist.sample();
+    }
+
+    /* -- MAP Tree - MAP Tree -- */
+
+    public double getMAPFirstBranchLength(double subTreeHeight) {
+        BranchLengthDistribution dist = this.getFirstBranchDistribution();
+        return subTreeHeight * dist.mode();
+    }
+
+    public double getMAPSecondBranchLength(double subTreeHeight) {
+        BranchLengthDistribution dist = this.getSecondBranchDistribution();
+        return subTreeHeight * dist.mode();
     }
 }

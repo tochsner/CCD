@@ -16,13 +16,18 @@ import java.util.function.Function;
 import java.util.stream.DoubleStream;
 
 
-public class BCCDLinearMLE extends BCCDParameterEstimator {
+public class BCCDLinearMLE extends ParameterEstimator<BCCD> {
     Function<CladePartitionObservation, Double>[] getBetaObservations;
     Function<CladePartitionObservation, Double> func;
     int[][] betaGroups;
 
     public BCCDLinearMLE(Function<CladePartitionObservation, Double> func) {
         this.func = func;
+    }
+
+    @Override
+    public BCCD getCCD(int numLeaves, boolean storeBaseTrees) {
+        return new BCCD(numLeaves, storeBaseTrees, this);
     }
 
     @Override

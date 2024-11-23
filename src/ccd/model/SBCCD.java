@@ -13,14 +13,14 @@ public class SBCCD extends AbstractCCD {
 
     /* -- CONSTRUCTORS & CONSTRUCTION METHODS -- */
 
-    public SBCCD(int numLeaves, boolean storeBaseTrees, SBCCDParameterEstimator estimator) {
+    public SBCCD(int numLeaves, boolean storeBaseTrees, ParameterEstimator<SBCCD> estimator) {
         super(numLeaves, storeBaseTrees);
         this.estimator = estimator;
     }
 
     /* -- INITIALIZATION -- */
 
-    SBCCDParameterEstimator estimator;
+    ParameterEstimator<SBCCD> estimator;
 
     @Override
     public void initialize() {
@@ -47,6 +47,25 @@ public class SBCCD extends AbstractCCD {
         return clade;
     }
 
+    private Clade getClade(Node vertex) {
+        BitSet cladeInBits = BitSet.newBitSet(leafArraySize);
+        Clade firstChildClade;
+        Clade secondChildClade;
+
+        if (vertex.isLeaf()) {
+            int index = vertex.getNr();
+            cladeInBits.set(index);
+        } else {
+            firstChildClade = this.getClade(vertex.getChildren().get(0));
+            secondChildClade = this.getClade(vertex.getChildren().get(1));
+
+            cladeInBits.or(firstChildClade.getCladeInBits());
+            cladeInBits.or(secondChildClade.getCladeInBits());
+        }
+
+        return this.cladeMapping.get(cladeInBits);
+    }
+
     /* -- HEIGHT SAMPLING - HEIGHT SAMPLING -- */
 
     protected BranchLengthDistribution heightDistribution;
@@ -68,30 +87,32 @@ public class SBCCD extends AbstractCCD {
 
     @Override
     protected Tree getTreeBasedOnStrategy(SamplingStrategy samplingStrategy, HeightSettingStrategy heightStrategy) {
-        if (samplingStrategy != SamplingStrategy.Sampling || heightStrategy != HeightSettingStrategy.None) {
+        if (heightStrategy != HeightSettingStrategy.None) {
             return super.getTreeBasedOnStrategy(samplingStrategy, heightStrategy);
         }
 
+        double treeHeight = this.sampleTreeHeight();
+
         Node root = this.getVertexBasedOnStrategy(
+                samplingStrategy,
                 this.rootClade,
                 new int[]{this.getSizeOfLeavesArray()},
-                0,
-                this.sampleTreeHeight()
+                treeHeight
         );
         return new Tree(root);
     }
 
     protected Node getVertexBasedOnStrategy(
+            SamplingStrategy samplingStrategy,
             Clade clade,
             int[] runningInnerIndex,
-            double vertexHeight,
-            double subTreeHeight
+            double vertexHeight
     ) {
         if (clade.isLeaf()) {
             int leafNr = clade.getCladeInBits().nextSetBit(0);
             String taxonName = this.getSomeBaseTree().getTaxaNames()[leafNr];
 
-            assert subTreeHeight == 0.0;
+            assert vertexHeight == 0.0;
 
             Node vertex = new Node(taxonName);
             vertex.setNr(leafNr);
@@ -112,28 +133,36 @@ public class SBCCD extends AbstractCCD {
         double secondVertexHeight;
 
         if (firstClade.isLeaf()) {
-            firstVertexHeight = vertexHeight + subTreeHeight;
+            firstVertexHeight = 0.0;
+        } else if (samplingStrategy == SamplingStrategy.Sampling) {
+            firstVertexHeight = vertexHeight - partition.sampleFirstBranchLength(vertexHeight);
+        } else if (samplingStrategy == SamplingStrategy.MAP) {
+            firstVertexHeight = vertexHeight - partition.getMAPFirstBranchLength(vertexHeight);
         } else {
-            firstVertexHeight = partition.sampleFirstBranchLength(subTreeHeight);
+            throw new UnsupportedOperationException("This sampling strategy is not yet implemented.");
         }
 
         if (secondClade.isLeaf()) {
-            secondVertexHeight = vertexHeight + subTreeHeight;
+            secondVertexHeight = 0.0;
+        } else if (samplingStrategy == SamplingStrategy.Sampling) {
+            secondVertexHeight = vertexHeight - partition.sampleSecondBranchLength(vertexHeight);
+        } else if (samplingStrategy == SamplingStrategy.MAP) {
+            secondVertexHeight = vertexHeight - partition.getMAPSecondBranchLength(vertexHeight);
         } else {
-            secondVertexHeight = partition.sampleSecondBranchLength(subTreeHeight);
+            throw new UnsupportedOperationException("This sampling strategy is not yet implemented.");
         }
 
         Node firstChild = this.getVertexBasedOnStrategy(
+                samplingStrategy,
                 firstClade,
                 runningInnerIndex,
-                firstVertexHeight,
-                subTreeHeight - firstVertexHeight
+                firstVertexHeight
         );
         Node secondChild = this.getVertexBasedOnStrategy(
+                samplingStrategy,
                 secondClade,
                 runningInnerIndex,
-                secondVertexHeight,
-                subTreeHeight - secondVertexHeight
+                secondVertexHeight
         );
 
         Node vertex = new Node();
@@ -144,6 +173,78 @@ public class SBCCD extends AbstractCCD {
         vertex.addChild(secondChild);
 
         return vertex;
+    }
+
+    @Override
+    public void sampleBranchLengths(Tree tree) {
+        double treeHeight = this.sampleTreeHeight();
+
+        Node root = tree.getRoot();
+        root.setHeight(treeHeight);
+
+        this.sampleBranchLengths(root);
+    }
+
+    protected void sampleBranchLengths(Node vertex) {
+        double vertexHeight = vertex.getHeight();
+
+        if (vertex.isLeaf()) {
+            assert vertexHeight == 0.0;
+
+            int index = vertex.getNr();
+
+            BitSet cladeInBits = BitSet.newBitSet(leafArraySize);
+            cladeInBits.set(index);
+
+            return;
+        }
+
+        Node firstChild = vertex.getChild(0);
+        Node secondChild = vertex.getChild(1);
+
+        Clade clade = this.getClade(vertex);
+        Clade firstClade = this.getClade(firstChild);
+        Clade secondClade = this.getClade(secondChild);
+
+        SBCCDCladePartition partition = (SBCCDCladePartition) clade.getCladePartition(firstClade);
+
+        double firstVertexHeight;
+        double secondVertexHeight;
+
+        if (firstClade.isLeaf()) {
+            firstVertexHeight = 0.0;
+        } else {
+            firstVertexHeight = vertexHeight - partition.getMAPFirstBranchLength(vertexHeight);
+        }
+
+        if (secondClade.isLeaf()) {
+            secondVertexHeight = 0.0;
+        } else {
+            secondVertexHeight = vertexHeight - partition.getMAPSecondBranchLength(vertexHeight);
+        }
+
+        if (firstVertexHeight < 0) {
+            throw new RuntimeException();
+        }
+
+        firstChild.setHeight(firstVertexHeight);
+        secondChild.setHeight(secondVertexHeight);
+
+        sampleBranchLengths(firstChild);
+
+        sampleBranchLengths(secondChild);
+    }
+
+    /* -- TREE LIKELIHOOD - TREE LIKELIHOOD -- */
+
+    @Override
+    public double getProbabilityOfTree(Tree tree) {
+        double height = SBCCDCladePartition.getMaxDistanceToLeaf(tree.getRoot());
+        double heightDensity = this.getHeightDistribution().density(height);
+
+        double treeDensity = super.getProbabilityOfTree(tree);
+
+        return heightDensity * treeDensity;
     }
 
     /* -- STATE MANAGEMENT - STATE MANAGEMENT -- */
@@ -184,7 +285,7 @@ public class SBCCD extends AbstractCCD {
 
     @Override
     public AbstractCCD copy() {
-       throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
