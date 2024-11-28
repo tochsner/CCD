@@ -44,8 +44,8 @@ public class BCCDCladePartition extends CladePartition {
         double vertexHeight = vertex.getHeight();
         double childHeight = vertex.getChild(childIndex).getHeight();
 
-        if (vertexHeight - childHeight < 0)
-            throw new IllegalArgumentException();
+//        if (vertexHeight - childHeight < 0)
+//            throw new IllegalArgumentException();
 
         return vertexHeight - childHeight;
     }

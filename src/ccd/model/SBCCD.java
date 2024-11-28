@@ -209,7 +209,7 @@ public class SBCCD extends AbstractCCD {
         SBCCDCladePartition partition = (SBCCDCladePartition) clade.getCladePartition(firstClade);
 
         double firstVertexHeight;
-        double secondVertexHeight;
+        double secondVertexHeight = 0;
 
         if (firstClade.isLeaf()) {
             firstVertexHeight = 0.0;
@@ -217,10 +217,15 @@ public class SBCCD extends AbstractCCD {
             firstVertexHeight = vertexHeight - partition.getMAPFirstBranchLength(vertexHeight);
         }
 
-        if (secondClade.isLeaf()) {
-            secondVertexHeight = 0.0;
-        } else {
-            secondVertexHeight = vertexHeight - partition.getMAPSecondBranchLength(vertexHeight);
+        try {
+            if (secondClade.isLeaf()) {
+                secondVertexHeight = 0.0;
+            } else {
+                secondVertexHeight = vertexHeight - partition.getMAPSecondBranchLength(vertexHeight);
+            }
+        }
+        catch (Exception e) {
+            int a = 0;
         }
 
         if (firstVertexHeight < 0) {

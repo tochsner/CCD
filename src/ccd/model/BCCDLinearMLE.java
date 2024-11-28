@@ -1,6 +1,5 @@
 package ccd.model;
 
-import ccd.model.CladePartitionObservation;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.exception.NoBracketingException;
 import org.apache.commons.math3.optim.InitialGuess;
@@ -19,10 +18,15 @@ import java.util.stream.DoubleStream;
 public class BCCDLinearMLE extends ParameterEstimator<BCCD> {
     Function<CladePartitionObservation, Double>[] getBetaObservations;
     Function<CladePartitionObservation, Double> func;
+    BCCDFeatureSelector featureSelector;
     int[][] betaGroups;
 
     public BCCDLinearMLE(Function<CladePartitionObservation, Double> func) {
         this.func = func;
+    }
+
+    public BCCDLinearMLE(BCCDFeatureSelector featureSelector) {
+        this.featureSelector = featureSelector;
     }
 
     @Override
@@ -34,11 +38,18 @@ public class BCCDLinearMLE extends ParameterEstimator<BCCD> {
     public void estimateParameters(BCCD bccd) {
         List<BCCDCladePartition> partitions = bccd.getAllPartitions();
 
+        if (this.func != null) {
+            this.getBetaObservations = new Function[partitions.size()];
+            for (int i = 0; i < partitions.size(); i++) {
+                this.getBetaObservations[i] = func;
+            }
+        } else {
+            this.getBetaObservations = this.featureSelector.getFeatures(partitions);
+        }
+
         this.betaGroups = new int[partitions.size()][];
-        this.getBetaObservations = new Function[partitions.size()];
         for (int i = 0; i < partitions.size(); i++) {
             this.betaGroups[i] = new int[]{i};
-            this.getBetaObservations[i] = this.func;
         }
 
         double approximateSigma = this.estimateMeanApproximateSigma(partitions);
@@ -78,7 +89,7 @@ public class BCCDLinearMLE extends ParameterEstimator<BCCD> {
         }
     }
 
-    double estimateMeanApproximateSigma(List<BCCDCladePartition> partitions) {
+    private double estimateMeanApproximateSigma(List<BCCDCladePartition> partitions) {
         List<Double> approximateSigmas = new ArrayList<>();
 
         for (BCCDCladePartition partition : partitions) {
@@ -90,7 +101,7 @@ public class BCCDLinearMLE extends ParameterEstimator<BCCD> {
         return approximateSigmas.stream().mapToDouble(x -> x).average().orElseThrow();
     }
 
-    class BetaOptimizer implements UnivariateFunction {
+    private class BetaOptimizer implements UnivariateFunction {
         BCCD bccd;
         List<BCCDCladePartition> partitions;
         Function<CladePartitionObservation, Double>[] getBetaObservations;
@@ -175,7 +186,7 @@ public class BCCDLinearMLE extends ParameterEstimator<BCCD> {
         }
     }
 
-    void setDistribution(BCCD bccd, int partitionIdx, double beta, double mu, double sigma) {
+    private void setDistribution(BCCD bccd, int partitionIdx, double beta, double mu, double sigma) {
         Function<CladePartitionObservation, Double> getBetaObservation = this.getBetaObservations[partitionIdx];
         BCCDCladePartition partition = bccd.getAllPartitions().get(partitionIdx);
         partition.setDistributionFunc(
