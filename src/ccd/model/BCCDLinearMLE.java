@@ -55,7 +55,7 @@ public class BCCDLinearMLE extends ParameterEstimator<BCCD> {
         double approximateSigma = this.estimateMeanApproximateSigma(partitions);
 
         for (int[] betaGroup : this.betaGroups) {
-            BrentOptimizer solver = new BrentOptimizer(1e-1, 1e-1);
+            BrentOptimizer solver = new BrentOptimizer(1e-3, 1e-3);
             BetaOptimizer optimizer = new BetaOptimizer(
                     bccd,
                     betaGroup,

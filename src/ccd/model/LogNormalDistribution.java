@@ -1,6 +1,5 @@
 package ccd.model;
 
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.util.FastMath;
 
 public class LogNormalDistribution extends BranchLengthDistribution {
@@ -32,7 +31,7 @@ public class LogNormalDistribution extends BranchLengthDistribution {
 
     @Override
     public double sample() {
-        double sampledLogValue = new NormalDistribution(this.logMean, this.logStd).sample();
+        double sampledLogValue = this.logMean + this.logStd * this.getRandom().nextGaussian();
         return Math.exp(sampledLogValue);
     }
 }
