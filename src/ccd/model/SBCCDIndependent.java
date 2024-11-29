@@ -23,19 +23,19 @@ public class SBCCDIndependent extends ParameterEstimator<SBCCD> {
     private void estimateHeightDistribution(SBCCD sbccd) {
         Clade rootClade = sbccd.getRootClade();
 
-        DoubleStream observedLogHeights = DoubleStream.empty();
+        DoubleStream observedHeights = DoubleStream.empty();
 
         for (SBCCDCladePartition partition : sbccd.getAllPartitions()) {
             if (partition.getParentClade() == rootClade) {
-                observedLogHeights = DoubleStream.concat(
-                        observedLogHeights,
-                        partition.getObservations().stream().mapToDouble(x -> Math.log(x.subTreeHeight()))
+                observedHeights = DoubleStream.concat(
+                        observedHeights,
+                        partition.getObservations().stream().mapToDouble(x -> x.subTreeHeight())
                 );
             }
         }
 
-        double[] observedLogHeightsArray = observedLogHeights.toArray();
-        LogNormalDistribution heightDistribution = LogNormalDistribution.estimateMLE(observedLogHeightsArray);
+        double[] observedLogHeightsArray = observedHeights.toArray();
+        GammaDistribution heightDistribution = GammaDistribution.estimateMLE(observedLogHeightsArray, 1e-8);
         sbccd.setHeightDistribution(heightDistribution);
     }
 
