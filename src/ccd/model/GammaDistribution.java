@@ -34,6 +34,11 @@ public class GammaDistribution extends BranchLengthDistribution {
     }
 
     @Override
+    public double mean() {
+        return this.gammaDistribution.getNumericalMean();
+    }
+
+    @Override
     public double sample() {
         return this.gammaDistribution.sample();
     }

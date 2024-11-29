@@ -12,6 +12,11 @@ public class UniformDistribution extends BranchLengthDistribution {
     }
 
     @Override
+    public double mean() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public double sample() {
         throw new UnsupportedOperationException();
     }

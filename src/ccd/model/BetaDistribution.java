@@ -20,15 +20,20 @@ public class BetaDistribution extends BranchLengthDistribution {
     }
 
     @Override
-    public double mode() {
+    public double mode() throws NoModeException {
         double alpha = this.betaDistribution.getAlpha();
         double beta = this.betaDistribution.getBeta();
 
         if (alpha < 1 || beta < 1) {
-            throw new AssertionError("Distribution has no mode.");
+            throw new NoModeException();
         }
 
         return (alpha - 1) / (alpha + beta - 2);
+    }
+
+    @Override
+    public double mean() {
+        return this.betaDistribution.getNumericalMean();
     }
 
     @Override
@@ -36,18 +41,28 @@ public class BetaDistribution extends BranchLengthDistribution {
         return this.betaDistribution.sample();
     }
 
-    public static BetaDistribution estimate(double[] observations) {
-        if (observations.length == 1) return new BetaDistribution(1, 1);
+    public static double estimateAlpha(double[] observations) {
+        if (observations.length < 2) throw new IllegalArgumentException("Too few samples to estimate the distribution.");
 
         double mean = new Mean().evaluate(observations);
         double variance = new Variance().evaluate(observations);
 
-        double alpha = mean * (mean * (1 - mean) / variance - 1);
-        double beta = (1 - mean) * (mean * (1 - mean) / variance - 1);
+        return mean * (mean * (1 - mean) / variance - 1);
+    }
 
-        if (alpha < 1) alpha = 1.05;
-        if (beta < 1) beta = 1.05;
+    public static double estimateBeta(double[] observations) {
+        if (observations.length < 2) throw new IllegalArgumentException("Too few samples to estimate the distribution.");
 
-        return new BetaDistribution(alpha, beta);
+        double mean = new Mean().evaluate(observations);
+        double variance = new Variance().evaluate(observations);
+
+        return (1 - mean) * (mean * (1 - mean) / variance - 1);
+    }
+
+    public static BetaDistribution estimate(double[] observations) {
+        return new BetaDistribution(
+                BetaDistribution.estimateAlpha(observations),
+                BetaDistribution.estimateBeta(observations)
+        );
     }
 }

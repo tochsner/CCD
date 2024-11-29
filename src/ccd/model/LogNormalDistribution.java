@@ -1,5 +1,7 @@
 package ccd.model;
 
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
+import org.apache.commons.math3.stat.descriptive.moment.Variance;
 import org.apache.commons.math3.util.FastMath;
 
 public class LogNormalDistribution extends BranchLengthDistribution {
@@ -30,8 +32,19 @@ public class LogNormalDistribution extends BranchLengthDistribution {
     }
 
     @Override
+    public double mean() {
+        return Math.exp(this.logMean);
+    }
+
+    @Override
     public double sample() {
         double sampledLogValue = this.logMean + this.logStd * this.getRandom().nextGaussian();
         return Math.exp(sampledLogValue);
+    }
+
+    public static LogNormalDistribution estimateMLE(double[] observations) {
+        double logMean = new Mean().evaluate(observations);
+        double logVariance = new Variance().evaluate(observations);
+        return new LogNormalDistribution(logMean, Math.sqrt(logVariance));
     }
 }

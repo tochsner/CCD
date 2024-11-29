@@ -118,11 +118,19 @@ public class SBCCDCladePartition extends CladePartition {
 
     public double getMAPFirstBranchLength(double subTreeHeight) {
         BranchLengthDistribution dist = this.getFirstBranchDistribution();
-        return subTreeHeight * dist.mode();
+        try {
+            return subTreeHeight * dist.mode();
+        } catch (NoModeException e) {
+            return subTreeHeight * dist.mean();
+        }
     }
 
     public double getMAPSecondBranchLength(double subTreeHeight) {
         BranchLengthDistribution dist = this.getSecondBranchDistribution();
-        return subTreeHeight * dist.mode();
+        try {
+            return subTreeHeight * dist.mode();
+        } catch (NoModeException e) {
+            return subTreeHeight * dist.mean();
+        }
     }
 }

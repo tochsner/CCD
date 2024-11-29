@@ -186,6 +186,10 @@ public class BCCDCladePartition extends CladePartition {
     /* -- MAP Tree - MAP Tree -- */
     public double getMAPBranchLength(Node vertex) {
         BranchLengthDistribution dist = this.getBranchLengthDistribution(vertex);
-        return dist.mode();
+        try {
+            return dist.mode();
+        } catch (NoModeException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
