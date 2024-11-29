@@ -35,8 +35,8 @@ public class SBCCDCladePartition extends CladePartition {
 
     private static SBCCDCladePartitionObservation createObservation(Node vertex) {
         SBCCDCladePartitionObservation observation = new SBCCDCladePartitionObservation(
-                getBranchLength(vertex, 0),
-                getBranchLength(vertex, 1),
+                getBranchLength(vertex, Utils.getFirstChild(vertex)),
+                getBranchLength(vertex, Utils.getSecondChild(vertex)),
                 getMaxDistanceToLeaf(vertex)
         );
         return observation;
@@ -90,14 +90,25 @@ public class SBCCDCladePartition extends CladePartition {
 
         double subTreeHeight = this.getMaxDistanceToLeaf(vertex);
 
-        double firstBranchLength = getBranchLength(vertex, 0);
-        double secondBranchLength = getBranchLength(vertex, 1);
+        double firstBranchLength = getBranchLength(vertex, Utils.getFirstChild(vertex));
+        double secondBranchLength = getBranchLength(vertex, Utils.getSecondChild(vertex));
 
         BranchLengthDistribution firstBranchLengthDistribution = this.getFirstBranchDistribution();
         BranchLengthDistribution secondBranchLengthDistribution = this.getSecondBranchDistribution();
 
-        double firstBranchProbability = firstBranchLengthDistribution.density(firstBranchLength / subTreeHeight) / subTreeHeight;
-        double secondBranchProbability = secondBranchLengthDistribution.density(secondBranchLength / subTreeHeight) / subTreeHeight;
+        double firstBranchProbability;
+        if (vertex.getChild(Utils.getFirstChild(vertex)).isLeaf()) {
+            firstBranchProbability = 1.0;
+        } else {
+            firstBranchProbability = firstBranchLengthDistribution.density(firstBranchLength / subTreeHeight) / subTreeHeight;
+        }
+
+        double secondBranchProbability;
+        if (vertex.getChild(Utils.getSecondChild(vertex)).isLeaf()) {
+            secondBranchProbability = 1.0;
+        } else {
+            secondBranchProbability = secondBranchLengthDistribution.density(secondBranchLength / subTreeHeight) / subTreeHeight;
+        }
 
         return ccdCCP * firstBranchProbability * secondBranchProbability;
     }

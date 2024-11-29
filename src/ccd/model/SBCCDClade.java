@@ -8,7 +8,11 @@ public class SBCCDClade extends Clade {
     @Override
     public CladePartition createCladePartition(Clade firstChildClade, Clade secondChildClade,
                                                boolean storeParent) {
-        SBCCDClade[] partitioningClades = new SBCCDClade[]{(SBCCDClade) firstChildClade, (SBCCDClade) secondChildClade};
+        SBCCDClade[] partitioningClades = new SBCCDClade[]{
+                (SBCCDClade) Utils.getFirstClade(firstChildClade, secondChildClade),
+                (SBCCDClade) Utils.getSecondClade(firstChildClade, secondChildClade)
+        };
+
 
         CladePartition newPartition = new SBCCDCladePartition(this, partitioningClades);
         partitions.add(newPartition);

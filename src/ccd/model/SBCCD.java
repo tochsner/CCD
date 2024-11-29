@@ -47,25 +47,6 @@ public class SBCCD extends AbstractCCD {
         return clade;
     }
 
-    private Clade getClade(Node vertex) {
-        BitSet cladeInBits = BitSet.newBitSet(leafArraySize);
-        Clade firstChildClade;
-        Clade secondChildClade;
-
-        if (vertex.isLeaf()) {
-            int index = vertex.getNr();
-            cladeInBits.set(index);
-        } else {
-            firstChildClade = this.getClade(vertex.getChildren().get(0));
-            secondChildClade = this.getClade(vertex.getChildren().get(1));
-
-            cladeInBits.or(firstChildClade.getCladeInBits());
-            cladeInBits.or(secondChildClade.getCladeInBits());
-        }
-
-        return this.cladeMapping.get(cladeInBits);
-    }
-
     /* -- HEIGHT SAMPLING - HEIGHT SAMPLING -- */
 
     protected BranchLengthDistribution heightDistribution;
@@ -83,6 +64,15 @@ public class SBCCD extends AbstractCCD {
         return dist.sample();
     }
 
+    protected double getTreeHeightMode() {
+        BranchLengthDistribution dist = this.getHeightDistribution();
+        try {
+            return dist.mode();
+        } catch (NoModeException e) {
+            return dist.mean();
+        }
+    }
+
     /* -- TREE SAMPLING - TREE SAMPLING -- */
 
     @Override
@@ -91,7 +81,14 @@ public class SBCCD extends AbstractCCD {
             return super.getTreeBasedOnStrategy(samplingStrategy, heightStrategy);
         }
 
-        double treeHeight = this.sampleTreeHeight();
+        double treeHeight;
+        if (samplingStrategy == SamplingStrategy.Sampling) {
+            treeHeight = this.sampleTreeHeight();
+        } else if (samplingStrategy == SamplingStrategy.MAP) {
+            treeHeight = this.getTreeHeightMode();
+        } else {
+            throw new UnsupportedOperationException("This sampling strategy is not yet implemented.");
+        }
 
         Node root = this.getVertexBasedOnStrategy(
                 samplingStrategy,
@@ -177,67 +174,7 @@ public class SBCCD extends AbstractCCD {
 
     @Override
     public void sampleBranchLengths(Tree tree) {
-        double treeHeight = this.sampleTreeHeight();
-
-        Node root = tree.getRoot();
-        root.setHeight(treeHeight);
-
-        this.sampleBranchLengths(root);
-    }
-
-    protected void sampleBranchLengths(Node vertex) {
-        double vertexHeight = vertex.getHeight();
-
-        if (vertex.isLeaf()) {
-            assert vertexHeight == 0.0;
-
-            int index = vertex.getNr();
-
-            BitSet cladeInBits = BitSet.newBitSet(leafArraySize);
-            cladeInBits.set(index);
-
-            return;
-        }
-
-        Node firstChild = vertex.getChild(0);
-        Node secondChild = vertex.getChild(1);
-
-        Clade clade = this.getClade(vertex);
-        Clade firstClade = this.getClade(firstChild);
-        Clade secondClade = this.getClade(secondChild);
-
-        SBCCDCladePartition partition = (SBCCDCladePartition) clade.getCladePartition(firstClade);
-
-        double firstVertexHeight;
-        double secondVertexHeight = 0;
-
-        if (firstClade.isLeaf()) {
-            firstVertexHeight = 0.0;
-        } else {
-            firstVertexHeight = vertexHeight - partition.getMAPFirstBranchLength(vertexHeight);
-        }
-
-        try {
-            if (secondClade.isLeaf()) {
-                secondVertexHeight = 0.0;
-            } else {
-                secondVertexHeight = vertexHeight - partition.getMAPSecondBranchLength(vertexHeight);
-            }
-        }
-        catch (Exception e) {
-            int a = 0;
-        }
-
-        if (firstVertexHeight < 0) {
-            throw new RuntimeException();
-        }
-
-        firstChild.setHeight(firstVertexHeight);
-        secondChild.setHeight(secondVertexHeight);
-
-        sampleBranchLengths(firstChild);
-
-        sampleBranchLengths(secondChild);
+        throw new UnsupportedOperationException();
     }
 
     /* -- TREE LIKELIHOOD - TREE LIKELIHOOD -- */
