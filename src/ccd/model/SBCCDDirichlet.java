@@ -10,7 +10,7 @@ import java.util.stream.DoubleStream;
 public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
 
     @Override
-    public SBCCD getCCD(int numLeaves, boolean storeBaseTrees) {
+    public SBCCD buildCCD(int numLeaves, boolean storeBaseTrees) {
         return new SBCCD(numLeaves, storeBaseTrees, this);
     }
 

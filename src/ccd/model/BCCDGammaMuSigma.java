@@ -6,7 +6,7 @@ import java.util.List;
 
 public class BCCDGammaMuSigma extends ParameterEstimator<BCCD> {
     @Override
-    public BCCD getCCD(int numLeaves, boolean storeBaseTrees) {
+    public BCCD buildCCD(int numLeaves, boolean storeBaseTrees) {
         return new BCCD(numLeaves, storeBaseTrees, this);
     }
 

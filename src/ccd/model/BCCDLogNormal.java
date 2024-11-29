@@ -16,23 +16,23 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 
-public class BCCDLinear extends ParameterEstimator<BCCD> {
+public class BCCDLogNormal extends ParameterEstimator<BCCD> {
     List<Function<CladePartitionObservation, Double>> getObservation;
     int numBetas;
     boolean useGlobalBeta;
 
-    public BCCDLinear() {
+    public BCCDLogNormal() {
         this(new ArrayList<>(), true);
     }
 
-    public BCCDLinear(
+    public BCCDLogNormal(
             Function<CladePartitionObservation, Double> getObservation,
             boolean useGlobalBeta
     ) {
         this(List.of(getObservation), useGlobalBeta);
     }
 
-    public BCCDLinear(
+    public BCCDLogNormal(
             List<Function<CladePartitionObservation, Double>> getObservation,
             boolean useGlobalBeta
     ) {
@@ -42,7 +42,7 @@ public class BCCDLinear extends ParameterEstimator<BCCD> {
     }
 
     @Override
-    public BCCD getCCD(int numLeaves, boolean storeBaseTrees) {
+    public BCCD buildCCD(int numLeaves, boolean storeBaseTrees) {
         return new BCCD(numLeaves, storeBaseTrees, this);
     }
 

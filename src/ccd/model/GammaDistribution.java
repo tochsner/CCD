@@ -1,5 +1,9 @@
 package ccd.model;
 
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
+
+import java.util.Arrays;
+
 public class GammaDistribution extends BranchLengthDistribution {
     org.apache.commons.math3.distribution.GammaDistribution gammaDistribution;
 
@@ -32,5 +36,33 @@ public class GammaDistribution extends BranchLengthDistribution {
     @Override
     public double sample() {
         return this.gammaDistribution.sample();
+    }
+
+    public static BranchLengthDistribution estimateMLE(double[] observations, double relTolerance) {
+        double shape = GammaDistribution.estimateScaleMLE(observations, relTolerance);
+        double scale = GammaDistribution.estimateScaleMLE(observations, shape);
+        return new GammaDistribution(shape, scale);
+    }
+
+    public static double estimateShapeMLE(double[] observations, double relTolerance) {
+        double mean = new Mean().evaluate(observations);
+        double logMean = Arrays.stream(observations).map(x -> Math.log(x)).average().orElseThrow();
+
+        double oldShape = 0;
+        double newShape = 0.5 / (Math.log(mean) - logMean);
+
+        while (relTolerance < Math.abs(oldShape - newShape) / oldShape) {
+            oldShape = newShape;
+            newShape = 1 / (
+                    (1 / oldShape) + (logMean - Math.log(mean) + Math.log(oldShape) - Digamma.value(oldShape)) / (Math.pow(oldShape, 2) * (1 / oldShape - Trigamma.value(oldShape)))
+            );
+        }
+
+        return newShape;
+    }
+
+    public static double estimateScaleMLE(double[] observations, double shapeMLE) {
+        double mean = new Mean().evaluate(observations);
+        return mean / shapeMLE;
     }
 }
