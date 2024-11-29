@@ -171,6 +171,18 @@ public class BCCDCladePartition extends CladePartition {
         return ccdCCP * branchProbability;
     }
 
+    @Override
+    public double getLogCCP(Node vertex) {
+        double logCcdCCP = super.getLogCCP();
+
+        double minBranchLength = getBranchLengthOld(vertex);
+
+        BranchLengthDistribution branchLengthDistribution = this.getBranchLengthDistribution(vertex);
+        double logBranchProbability = branchLengthDistribution.logDensity(minBranchLength);
+
+        return logCcdCCP + logBranchProbability;
+    }
+
     /* -- Sampling - Sampling -- */
 
     protected BranchLengthDistribution getBranchLengthDistribution(Node vertex) {
@@ -189,7 +201,7 @@ public class BCCDCladePartition extends CladePartition {
         try {
             return dist.mode();
         } catch (NoModeException e) {
-            throw new RuntimeException(e);
+            return dist.mean();
         }
     }
 }

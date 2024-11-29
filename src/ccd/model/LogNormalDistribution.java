@@ -27,6 +27,18 @@ public class LogNormalDistribution extends BranchLengthDistribution {
     }
 
     @Override
+    public double logDensity(double value) {
+        double logValue = FastMath.log(value);
+
+        double x0 = logValue - this.logMean;
+        double x1 = x0 / this.logStd;
+        double logDensity = -0.5 * x1 * x1 - FastMath.log(this.logStd) + 0.5 * FastMath.log(6.283185307179586);
+        double logNormalDensity = logDensity - logValue;
+
+        return logNormalDensity;
+    }
+
+    @Override
     public double mode() {
         return Math.exp(this.logMean);
     }

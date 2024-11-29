@@ -22,12 +22,17 @@ public class GammaDistribution extends BranchLengthDistribution {
     }
 
     @Override
-    public double mode() {
+    public double logDensity(double value) {
+        return this.gammaDistribution.logDensity(value);
+    }
+
+    @Override
+    public double mode() throws NoModeException {
         double shape = this.gammaDistribution.getShape();
         double scale = this.gammaDistribution.getScale();
 
         if (shape < 1) {
-            return 0.0;
+            return 0;
         } else {
             return (shape - 1) * scale;
         }

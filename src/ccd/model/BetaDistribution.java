@@ -12,11 +12,12 @@ public class BetaDistribution extends BranchLengthDistribution {
 
     @Override
     public double density(double value) {
-        try {
-            return this.betaDistribution.density(value);
-        } catch (Exception e) {
-            return 1.0;
-        }
+        return this.betaDistribution.density(value);
+    }
+
+    @Override
+    public double logDensity(double value) {
+        return this.betaDistribution.logDensity(value);
     }
 
     @Override
@@ -42,7 +43,8 @@ public class BetaDistribution extends BranchLengthDistribution {
     }
 
     public static double estimateAlpha(double[] observations) {
-        if (observations.length < 2) throw new IllegalArgumentException("Too few samples to estimate the distribution.");
+        if (observations.length < 2)
+            throw new IllegalArgumentException("Too few samples to estimate the distribution.");
 
         double mean = new Mean().evaluate(observations);
         double variance = new Variance().evaluate(observations);
@@ -51,7 +53,8 @@ public class BetaDistribution extends BranchLengthDistribution {
     }
 
     public static double estimateBeta(double[] observations) {
-        if (observations.length < 2) throw new IllegalArgumentException("Too few samples to estimate the distribution.");
+        if (observations.length < 2)
+            throw new IllegalArgumentException("Too few samples to estimate the distribution.");
 
         double mean = new Mean().evaluate(observations);
         double variance = new Variance().evaluate(observations);

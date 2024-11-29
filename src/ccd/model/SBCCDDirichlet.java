@@ -47,17 +47,13 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
         List<SBCCDCladePartition> partitions = sbccd.getAllPartitions();
 
         for (SBCCDCladePartition partition : partitions) {
-            if (partition.getChildClades()[0].isLeaf()) {
-                partition.setFirstBranchDistribution(new UniformDistribution());
-            } else {
+            if (!partition.getChildClades()[0].isLeaf()) {
                 double[] firstBranchRatios = partition.getObservations().stream().mapToDouble(x -> x.branchLengthLeft() / x.subTreeHeight()).toArray();
                 BranchLengthDistribution firstBranchRationDist = BetaDistribution.estimate(firstBranchRatios);
                 partition.setFirstBranchDistribution(firstBranchRationDist);
             }
 
-            if (partition.getChildClades()[1].isLeaf()) {
-                partition.setSecondBranchDistribution(new UniformDistribution());
-            } else {
+            if (!partition.getChildClades()[1].isLeaf()) {
                 double[] secondBranchRatios = partition.getObservations().stream().mapToDouble(x -> x.branchLengthRight() / x.subTreeHeight()).toArray();
                 BranchLengthDistribution secondBranchRationDist = BetaDistribution.estimate(secondBranchRatios);
                 partition.setSecondBranchDistribution(secondBranchRationDist);

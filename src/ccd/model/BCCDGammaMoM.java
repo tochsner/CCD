@@ -2,6 +2,7 @@ package ccd.model;
 
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.descriptive.moment.Variance;
+import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 
 import java.util.ArrayList;
@@ -151,9 +152,9 @@ public class BCCDGammaMoM extends ParameterEstimator<BCCD> {
             allShapes.add(shape);
         }
 
-        double meanShape = allShapes.stream().reduce((a, b) -> a + b).get() / partitions.size();
+        double medianShape = new Median().evaluate(allShapes.stream().mapToDouble(x -> x).toArray());
         for (int i : idxWithoutEnoughData) {
-            shapes[i] = meanShape;
+            shapes[i] = medianShape;
         }
 
         double lowShape = new Percentile().evaluate(allShapes.stream().mapToDouble(x -> x).toArray(), 10);
@@ -190,9 +191,10 @@ public class BCCDGammaMoM extends ParameterEstimator<BCCD> {
             allScales.add(scale);
         }
 
-        double meanScale = allScales.stream().reduce((a, b) -> a + b).get() / partitions.size();
+        Median median = new Median();
+        double medianScale = median.evaluate(allScales.stream().mapToDouble(x -> x).toArray());
         for (int i : idxWithoutEnoughData) {
-            scales[i] = meanScale;
+            scales[i] = medianScale;
         }
 
         return scales;

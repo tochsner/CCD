@@ -1203,10 +1203,10 @@ public abstract class AbstractCCD implements ITreeDistribution {
     public double getProbabilityOfTree(Tree tree) {
         resetCacheIfProbabilitiesDirty();
 
-        double[] runningProbability = new double[]{1};
+        double[] runningProbability = new double[]{0};
         computeProbabilityOfVertex(tree.getRoot(), runningProbability);
 
-        return runningProbability[0];
+        return Math.exp(runningProbability[0]);
     }
 
     /* Recursive helper method */
@@ -1227,7 +1227,7 @@ public abstract class AbstractCCD implements ITreeDistribution {
                     runningProbability);
 
             if ((firstChildClade == null) || (secondChildClade == null)) {
-                runningProbability[0] = 0;
+                runningProbability[0] = Double.NEGATIVE_INFINITY;
                 return null;
             }
 
@@ -1240,12 +1240,12 @@ public abstract class AbstractCCD implements ITreeDistribution {
                 CladePartition partition = currentClade.getCladePartition(firstChildClade,
                         secondChildClade);
                 if (partition != null) {
-                    runningProbability[0] *= partition.getCCP(vertex);
+                    runningProbability[0] += partition.getLogCCP(vertex);
                 } else {
-                    runningProbability[0] = 0;
+                    runningProbability[0] = Double.NEGATIVE_INFINITY;
                 }
             } else {
-                runningProbability[0] = 0;
+                runningProbability[0] = Double.NEGATIVE_INFINITY;
             }
 
             return currentClade;

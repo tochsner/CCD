@@ -113,6 +113,35 @@ public class SBCCDCladePartition extends CladePartition {
         return ccdCCP * firstBranchProbability * secondBranchProbability;
     }
 
+    @Override
+    public double getLogCCP(Node vertex) {
+        double logCcdCCP = super.getLogCCP();
+
+        double subTreeHeight = this.getMaxDistanceToLeaf(vertex);
+
+        double firstBranchLength = getBranchLength(vertex, Utils.getFirstChild(vertex));
+        double secondBranchLength = getBranchLength(vertex, Utils.getSecondChild(vertex));
+
+        BranchLengthDistribution firstBranchLengthDistribution = this.getFirstBranchDistribution();
+        BranchLengthDistribution secondBranchLengthDistribution = this.getSecondBranchDistribution();
+
+        double firstLogBranchProbability;
+        if (vertex.getChild(Utils.getFirstChild(vertex)).isLeaf()) {
+            firstLogBranchProbability = 0.0;
+        } else {
+            firstLogBranchProbability = firstBranchLengthDistribution.logDensity(firstBranchLength / subTreeHeight) - Math.log(subTreeHeight);
+        }
+
+        double secondLogBranchProbability;
+        if (vertex.getChild(Utils.getSecondChild(vertex)).isLeaf()) {
+            secondLogBranchProbability = 0.0;
+        } else {
+            secondLogBranchProbability = secondBranchLengthDistribution.logDensity(secondBranchLength / subTreeHeight) - Math.log(subTreeHeight);
+        }
+
+        return logCcdCCP + firstLogBranchProbability + secondLogBranchProbability;
+    }
+
     /* -- Sampling - Sampling -- */
 
     public double sampleFirstBranchLength(double subTreeHeight) {
