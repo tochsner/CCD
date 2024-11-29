@@ -44,7 +44,7 @@ public class GammaDistribution extends BranchLengthDistribution {
     }
 
     public static GammaDistribution estimateMLE(double[] observations, double relTolerance) {
-        double shape = GammaDistribution.estimateScaleMLE(observations, relTolerance);
+        double shape = GammaDistribution.estimateShapeMLE(observations, relTolerance);
         double scale = GammaDistribution.estimateScaleMLE(observations, shape);
         return new GammaDistribution(shape, scale);
     }

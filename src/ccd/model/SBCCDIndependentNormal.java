@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.DoubleStream;
 
 
-public class SBCCDIndependent extends ParameterEstimator<SBCCD> {
+public class SBCCDIndependentNormal extends ParameterEstimator<SBCCD> {
 
     @Override
     public SBCCD buildCCD(int numLeaves, boolean storeBaseTrees) {
@@ -35,7 +35,7 @@ public class SBCCDIndependent extends ParameterEstimator<SBCCD> {
         }
 
         double[] observedLogHeightsArray = observedHeights.toArray();
-        GammaDistribution heightDistribution = GammaDistribution.estimateMLE(observedLogHeightsArray, 1e-8);
+        GammaDistribution heightDistribution = GammaDistribution.estimateMLE(observedLogHeightsArray, 1e-6);
         sbccd.setHeightDistribution(heightDistribution);
     }
 

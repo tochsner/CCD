@@ -93,7 +93,7 @@ public class BCCDGammaMLE extends ParameterEstimator<BCCD> {
         for (BCCDCladePartition partition : partitions) {
             if (partition.getNumberOfOccurrences() < 2) continue;
             double[] b = partition.getObservedBranchLengthsOld().toArray();
-            double approximateShape = GammaDistribution.estimateShapeMLE(b, 1e-8);
+            double approximateShape = GammaDistribution.estimateShapeMLE(b, 1e-6);
             approximateShapes.add(approximateShape);
         }
 
@@ -144,7 +144,7 @@ public class BCCDGammaMLE extends ParameterEstimator<BCCD> {
                         x -> x.branchLengthOld() * Math.exp(Utils.logOrZero(this.getBetaObservations[pIdx].apply(x)) * beta)
                 ).toArray();
 
-                shapes[i] = GammaDistribution.estimateShapeMLE(transformedObservations, 1e-8);
+                shapes[i] = GammaDistribution.estimateShapeMLE(transformedObservations, 1e-6);
             }
 
             return shapes;
