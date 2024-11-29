@@ -8,12 +8,11 @@ import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.univariate.BrentOptimizer;
 import org.apache.commons.math3.optim.univariate.SearchInterval;
 import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
-import org.apache.commons.math3.stat.descriptive.moment.Variance;
+import org.apache.commons.math3.stat.descriptive.rank.Median;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.DoubleStream;
 
 
 public class BCCDGammaMLE extends ParameterEstimator<BCCD> {
@@ -53,7 +52,7 @@ public class BCCDGammaMLE extends ParameterEstimator<BCCD> {
             this.betaGroups[i] = new int[]{i};
         }
 
-        double approximateShape = this.estimateMeanApproximateShape(partitions);
+        double approximateShape = this.estimateMedianApproximateShape(partitions);
 
         for (int[] betaGroup : this.betaGroups) {
             BrentOptimizer solver = new BrentOptimizer(1e-3, 1e-3);
@@ -65,19 +64,17 @@ public class BCCDGammaMLE extends ParameterEstimator<BCCD> {
             );
 
             double optimalBeta;
-            if (partitions.get(betaGroup[0]).getNumberOfOccurrences() < 5) optimalBeta = 0;
-            else
-                try {
-                    optimalBeta = solver.optimize(
-                            GoalType.MAXIMIZE,
-                            new InitialGuess(new double[]{0.0}),
-                            new SearchInterval(-3, 3),
-                            new UnivariateObjectiveFunction(optimizer),
-                            new MaxEval(100)
-                    ).getPoint();
-                } catch (NoBracketingException e) {
-                    throw new ArithmeticException("No solution found");
-                }
+            try {
+                optimalBeta = solver.optimize(
+                        GoalType.MAXIMIZE,
+                        new InitialGuess(new double[]{0.0}),
+                        new SearchInterval(-3, 3),
+                        new UnivariateObjectiveFunction(optimizer),
+                        new MaxEval(100)
+                ).getPoint();
+            } catch (NoBracketingException e) {
+                throw new ArithmeticException("No solution found");
+            }
 
             double[] optimalShapes = optimizer.getOptimalShapes(optimalBeta);
             double[] optimalScales = optimizer.getOptimalScales(optimalBeta, optimalShapes);
@@ -90,16 +87,18 @@ public class BCCDGammaMLE extends ParameterEstimator<BCCD> {
         }
     }
 
-    private double estimateMeanApproximateShape(List<BCCDCladePartition> partitions) {
+    private double estimateMedianApproximateShape(List<BCCDCladePartition> partitions) {
         List<Double> approximateShapes = new ArrayList<>();
 
         for (BCCDCladePartition partition : partitions) {
-            double[] b = partition.getObservedLogBranchLengthsOld().toArray();
+            if (partition.getNumberOfOccurrences() < 2) continue;
+            double[] b = partition.getObservedBranchLengthsOld().toArray();
             double approximateShape = GammaDistribution.estimateShapeMLE(b, 1e-8);
             approximateShapes.add(approximateShape);
         }
 
-        return approximateShapes.stream().mapToDouble(x -> x).average().orElseThrow();
+        Median median = new Median();
+        return median.evaluate(approximateShapes.stream().mapToDouble(x -> x).toArray());
     }
 
     private class BetaOptimizer implements UnivariateFunction {

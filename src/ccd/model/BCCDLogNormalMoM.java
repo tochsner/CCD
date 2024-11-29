@@ -16,23 +16,23 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 
-public class BCCDLogNormal extends ParameterEstimator<BCCD> {
+public class BCCDLogNormalMoM extends ParameterEstimator<BCCD> {
     List<Function<CladePartitionObservation, Double>> getObservation;
     int numBetas;
     boolean useGlobalBeta;
 
-    public BCCDLogNormal() {
+    public BCCDLogNormalMoM() {
         this(new ArrayList<>(), true);
     }
 
-    public BCCDLogNormal(
+    public BCCDLogNormalMoM(
             Function<CladePartitionObservation, Double> getObservation,
             boolean useGlobalBeta
     ) {
         this(List.of(getObservation), useGlobalBeta);
     }
 
-    public BCCDLogNormal(
+    public BCCDLogNormalMoM(
             List<Function<CladePartitionObservation, Double>> getObservation,
             boolean useGlobalBeta
     ) {

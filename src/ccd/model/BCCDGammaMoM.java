@@ -1,6 +1,5 @@
 package ccd.model;
 
-import ccd.model.CladePartitionObservation;
 import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.descriptive.moment.Variance;
 import org.apache.commons.math3.stat.descriptive.rank.Percentile;
@@ -13,23 +12,23 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 
-public class BCCDGammaLinear extends ParameterEstimator<BCCD> {
+public class BCCDGammaMoM extends ParameterEstimator<BCCD> {
     List<Function<CladePartitionObservation, Double>> getObservation;
     int numBetas;
     boolean useGlobalBeta;
 
-    public BCCDGammaLinear() {
+    public BCCDGammaMoM() {
         this(new ArrayList<>(), true);
     }
 
-    public BCCDGammaLinear(
+    public BCCDGammaMoM(
             Function<CladePartitionObservation, Double> getObservation,
             boolean useGlobalBeta
     ) {
         this(List.of(getObservation), useGlobalBeta);
     }
 
-    public BCCDGammaLinear(
+    public BCCDGammaMoM(
             List<Function<CladePartitionObservation, Double>> getObservation,
             boolean useGlobalBeta
     ) {
