@@ -179,7 +179,7 @@ public class BCCDLogNormalMLE extends ParameterEstimator<BCCD> {
                 setDistribution(bccd, pIdx, beta, mus[i], sigmas[i]);
 
                 for (CladePartitionObservation observation : partition.getObservations()) {
-                    logLikelihood += Math.log(partition.getDistributionFunc().apply(observation).density(observation.branchLengthOld()));
+                    logLikelihood += partition.getDistributionFunc().apply(observation).logDensity(observation.branchLengthOld());
                 }
             }
 

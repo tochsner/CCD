@@ -177,7 +177,7 @@ public class BCCDGammaMLE extends ParameterEstimator<BCCD> {
                 setDistribution(bccd, pIdx, beta, shapes[i], scales[i]);
 
                 for (CladePartitionObservation observation : partition.getObservations()) {
-                    logLikelihood += Math.log(partition.getDistributionFunc().apply(observation).density(observation.branchLengthOld()));
+                    logLikelihood += partition.getDistributionFunc().apply(observation).logDensity(observation.branchLengthOld());
                 }
             }
 
