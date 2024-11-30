@@ -4,7 +4,6 @@ import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 import beastfx.app.treeannotator.TreeAnnotator.TreeSet;
 
-import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.math.BigInteger;
@@ -1204,13 +1203,22 @@ public abstract class AbstractCCD implements ITreeDistribution {
         resetCacheIfProbabilitiesDirty();
 
         double[] runningProbability = new double[]{0};
-        computeProbabilityOfVertex(tree.getRoot(), runningProbability);
+        computeLogProbabilityOfVertex(tree.getRoot(), runningProbability);
 
         return Math.exp(runningProbability[0]);
     }
 
+    public double getLogProbabilityOfTree(Tree tree) {
+        resetCacheIfProbabilitiesDirty();
+
+        double[] runningProbability = new double[]{0};
+        computeLogProbabilityOfVertex(tree.getRoot(), runningProbability);
+
+        return runningProbability[0];
+    }
+
     /* Recursive helper method */
-    private Clade computeProbabilityOfVertex(Node vertex, double[] runningProbability) {
+    private Clade computeLogProbabilityOfVertex(Node vertex, double[] runningProbability) {
         BitSet cladeInBits = BitSet.newBitSet(leafArraySize);
 
         if (vertex.isLeaf()) {
@@ -1221,9 +1229,9 @@ public abstract class AbstractCCD implements ITreeDistribution {
 
             return cladeMapping.get(cladeInBits);
         } else {
-            Clade firstChildClade = computeProbabilityOfVertex(vertex.getChildren().get(0),
+            Clade firstChildClade = computeLogProbabilityOfVertex(vertex.getChildren().get(0),
                     runningProbability);
-            Clade secondChildClade = computeProbabilityOfVertex(vertex.getChildren().get(1),
+            Clade secondChildClade = computeLogProbabilityOfVertex(vertex.getChildren().get(1),
                     runningProbability);
 
             if ((firstChildClade == null) || (secondChildClade == null)) {
