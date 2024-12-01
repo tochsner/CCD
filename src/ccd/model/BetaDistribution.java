@@ -7,7 +7,10 @@ public class BetaDistribution extends BranchLengthDistribution {
     org.apache.commons.math3.distribution.BetaDistribution betaDistribution;
 
     public BetaDistribution(double alpha, double beta) {
-        this.betaDistribution = new org.apache.commons.math3.distribution.BetaDistribution(alpha, beta);
+        this.betaDistribution = new org.apache.commons.math3.distribution.BetaDistribution(
+                Math.max(0.5, alpha),
+                Math.max(0.5, beta)
+        );
     }
 
     @Override

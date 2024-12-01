@@ -749,7 +749,7 @@ public class CCD0 extends AbstractCCD {
     }
 
     @Override
-    protected double getNumberOfParameters() {
+    public double getNumberOfParameters() {
         return this.getNumberOfClades();
     }
 

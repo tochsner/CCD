@@ -227,8 +227,8 @@ public class BCCD extends AbstractCCD {
     }
 
     @Override
-    protected double getNumberOfParameters() {
-        return 3 * this.getNumberOfCladePartitions();
+    public double getNumberOfParameters() {
+        return this.estimator.getNumberOfParameters(this);
     }
 
 }

@@ -4,6 +4,7 @@ import beast.base.evolution.tree.Node;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 
 public class SBCCDCladePartition extends CladePartition {
     private List<SBCCDCladePartitionObservation> observations = new LinkedList<>();
@@ -37,7 +38,8 @@ public class SBCCDCladePartition extends CladePartition {
         SBCCDCladePartitionObservation observation = new SBCCDCladePartitionObservation(
                 getBranchLength(vertex, Utils.getFirstChild(vertex)),
                 getBranchLength(vertex, Utils.getSecondChild(vertex)),
-                getMaxDistanceToLeaf(vertex)
+                getMaxDistanceToLeaf(vertex),
+                getMaxDistanceToLeaf(vertex.getTree().getRoot())
         );
         return observation;
     }
@@ -64,27 +66,36 @@ public class SBCCDCladePartition extends CladePartition {
 
     /* -- DISTRIBUTION - DISTRIBUTION -- */
 
-    protected BranchLengthDistribution firstBranchDistribution;
+    protected double firstBranchAlpha;
+    protected double firstBranchBeta;
+
+    protected double secondBranchAlpha;
+    protected double secondBranchBeta;
+
+    public void setFirstBranchAlpha(double firstBranchAlpha) {
+        this.firstBranchAlpha = firstBranchAlpha;
+    }
+
+    public void setFirstBranchBeta(double firstBranchBeta) {
+        this.firstBranchBeta = firstBranchBeta;
+    }
+
+    public void setSecondBranchAlpha(double secondBranchAlpha) {
+        this.secondBranchAlpha = secondBranchAlpha;
+    }
+
+    public void setSecondBranchBeta(double secondBranchBeta) {
+        this.secondBranchBeta = secondBranchBeta;
+    }
 
     public BranchLengthDistribution getFirstBranchDistribution() {
-        return firstBranchDistribution;
+        return new BetaDistribution(this.firstBranchAlpha, this.firstBranchBeta);
     }
-
-    public void setFirstBranchDistribution(BranchLengthDistribution firstBranchDistribution) {
-        this.firstBranchDistribution = firstBranchDistribution;
-    }
-
-    protected BranchLengthDistribution secondBranchDistribution;
 
     public BranchLengthDistribution getSecondBranchDistribution() {
-        return secondBranchDistribution;
+        return new BetaDistribution(this.secondBranchAlpha, this.secondBranchBeta);
     }
 
-    public void setSecondBranchDistribution(BranchLengthDistribution secondBranchDistribution) {
-        this.secondBranchDistribution = secondBranchDistribution;
-    }
-
-    @Override
     public double getCCP(Node vertex) {
         double ccdCCP = super.getCCP();
 
@@ -113,7 +124,6 @@ public class SBCCDCladePartition extends CladePartition {
         return ccdCCP * firstBranchProbability * secondBranchProbability;
     }
 
-    @Override
     public double getLogCCP(Node vertex) {
         double logCcdCCP = super.getLogCCP();
 
@@ -146,12 +156,14 @@ public class SBCCDCladePartition extends CladePartition {
 
     public double sampleFirstBranchLength(double subTreeHeight) {
         BranchLengthDistribution dist = this.getFirstBranchDistribution();
-        return subTreeHeight * dist.sample();
+        double sample = subTreeHeight * dist.sample();
+        return sample;
     }
 
     public double sampleSecondBranchLength(double subTreeHeight) {
         BranchLengthDistribution dist = this.getSecondBranchDistribution();
-        return subTreeHeight * dist.sample();
+        double sample = subTreeHeight * dist.sample();
+        return sample;
     }
 
     /* -- MAP Tree - MAP Tree -- */

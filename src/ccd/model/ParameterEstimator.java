@@ -9,5 +9,7 @@ public abstract class ParameterEstimator<T extends AbstractCCD> {
 
     public abstract void estimateParameters(T ccd);
 
+    public abstract int getNumberOfParameters(T ccd);
+
     public void estimateMAPBranches(Tree topology, List<BCCDCladePartition> partitions) {}
 }

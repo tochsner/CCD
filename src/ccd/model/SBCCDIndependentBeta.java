@@ -20,6 +20,11 @@ public class SBCCDIndependentBeta extends ParameterEstimator<SBCCD> {
         this.estimatePartitionParameters(sbccd);
     }
 
+    @Override
+    public int getNumberOfParameters(SBCCD ccd) {
+        throw new UnsupportedOperationException();
+    }
+
     private void estimateHeightDistribution(SBCCD sbccd) {
         Clade rootClade = sbccd.getRootClade();
 
@@ -48,7 +53,7 @@ public class SBCCDIndependentBeta extends ParameterEstimator<SBCCD> {
 
         for (int i = 0; i < partitions.size(); i++) {
             SBCCDCladePartition partition = partitions.get(i);
-            if (partition.getNumberOfOccurrences() < 2) {
+            if (partition.getNumberOfOccurrences() < 5) {
                 idxWithoutEnoughData.add(i);
                 continue;
             }
@@ -58,9 +63,9 @@ public class SBCCDIndependentBeta extends ParameterEstimator<SBCCD> {
 
                 double alpha = BetaDistribution.estimateAlpha(firstBranchRatios);
                 double beta = BetaDistribution.estimateBeta(firstBranchRatios);
-                BranchLengthDistribution firstBranchRatioDist = new BetaDistribution(alpha, beta);
 
-                partition.setFirstBranchDistribution(firstBranchRatioDist);
+                partition.setFirstBranchAlpha(alpha);
+                partition.setFirstBranchBeta(beta);
 
                 allAlphas.add(alpha);
                 allBetas.add(beta);
@@ -71,9 +76,9 @@ public class SBCCDIndependentBeta extends ParameterEstimator<SBCCD> {
 
                 double alpha = BetaDistribution.estimateAlpha(secondBranchRatios);
                 double beta = BetaDistribution.estimateBeta(secondBranchRatios);
-                BranchLengthDistribution secondBranchRatioDist = new BetaDistribution(alpha, beta);
 
-                partition.setSecondBranchDistribution(secondBranchRatioDist);
+                partition.setSecondBranchAlpha(alpha);
+                partition.setSecondBranchBeta(beta);
 
                 allAlphas.add(alpha);
                 allBetas.add(beta);
@@ -83,17 +88,18 @@ public class SBCCDIndependentBeta extends ParameterEstimator<SBCCD> {
         Median median = new Median();
         double medianAlpha = median.evaluate(allAlphas.stream().mapToDouble(x -> x).toArray());
         double medianBeta = median.evaluate(allBetas.stream().mapToDouble(x -> x).toArray());
-        BetaDistribution medianDistribution = new BetaDistribution(medianAlpha, medianBeta);
 
         for (int i : idxWithoutEnoughData) {
             SBCCDCladePartition partition = partitions.get(i);
 
             if (!partition.getChildClades()[0].isLeaf()) {
-                partition.setFirstBranchDistribution(medianDistribution);
+                partition.setFirstBranchAlpha(medianAlpha);
+                partition.setFirstBranchBeta(medianBeta);
             }
 
             if (!partition.getChildClades()[1].isLeaf()) {
-                partition.setSecondBranchDistribution(medianDistribution);
+                partition.setSecondBranchAlpha(medianAlpha);
+                partition.setSecondBranchBeta(medianBeta);
             }
         }
     }

@@ -61,11 +61,18 @@ public class GammaDistribution extends BranchLengthDistribution {
         double oldShape = 0;
         double newShape = 0.5 / (Math.log(mean) - logMean);
 
+        int MAX_ITERATIONS = 1000;
+        int i = 0;
         while (relTolerance < Math.abs(oldShape - newShape) / oldShape) {
             oldShape = newShape;
             newShape = 1 / (
                     (1 / oldShape) + (logMean - Math.log(mean) + Math.log(oldShape) - Digamma.value(oldShape)) / (Math.pow(oldShape, 2) * (1 / oldShape - Trigamma.value(oldShape)))
             );
+
+            i++;
+            if (MAX_ITERATIONS <= i) {
+                throw new ArithmeticException("Gamma estimation did not converge.");
+            }
         }
 
         return newShape;

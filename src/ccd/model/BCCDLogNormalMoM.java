@@ -75,6 +75,11 @@ public class BCCDLogNormalMoM extends ParameterEstimator<BCCD> {
         }
     }
 
+    @Override
+    public int getNumberOfParameters(BCCD ccd) {
+        return 3 * ccd.getNumberOfCladePartitions();
+    }
+
     public double[][] getBetas(List<BCCDCladePartition> partitions) {
         double[][] betas = new double[partitions.size()][this.numBetas];
 

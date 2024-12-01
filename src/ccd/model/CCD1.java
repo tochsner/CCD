@@ -133,7 +133,7 @@ public class CCD1 extends AbstractCCD {
     }
 
     @Override
-    protected double getNumberOfParameters() {
+    public double getNumberOfParameters() {
         return this.getNumberOfCladePartitions();
     }
 

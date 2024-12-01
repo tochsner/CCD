@@ -256,7 +256,7 @@ public class FilteredCCD extends AbstractCCD {
     }
 
     @Override
-    protected double getNumberOfParameters() {
+    public double getNumberOfParameters() {
         throw new UnsupportedOperationException();
     }
 

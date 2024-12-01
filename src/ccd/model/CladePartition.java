@@ -352,7 +352,7 @@ public class CladePartition {
     }
 
     public double getLogCCP(Node vertex) {
-        throw new UnsupportedOperationException();
+        return Math.log(this.getCCP(vertex));
     }
 
     /**

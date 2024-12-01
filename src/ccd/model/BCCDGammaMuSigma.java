@@ -27,6 +27,11 @@ public class BCCDGammaMuSigma extends ParameterEstimator<BCCD> {
         }
     }
 
+    @Override
+    public int getNumberOfParameters(BCCD ccd) {
+        return 2 * ccd.getNumberOfCladePartitions();
+    }
+
     public double[] getScales(List<BCCDCladePartition> partitions) {
         double[] scales = new double[partitions.size()];
 

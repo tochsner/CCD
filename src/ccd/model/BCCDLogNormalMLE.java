@@ -82,17 +82,22 @@ public class BCCDLogNormalMLE extends ParameterEstimator<BCCD> {
 
             for (int i = 0; i < betaGroup.length; i++) {
                 setDistribution(
-                        bccd, betaGroup[i], optimalBeta, optimalMus[i], optimalSigmas[i]
+                        partitions.get(betaGroup[i]), betaGroup[i], optimalBeta, optimalMus[i], optimalSigmas[i]
                 );
             }
         }
+    }
+
+    @Override
+    public int getNumberOfParameters(BCCD ccd) {
+        return 3 * ccd.getNumberOfCladePartitions();
     }
 
     private double estimateMedianApproximateSigma(List<BCCDCladePartition> partitions) {
         List<Double> approximateSigmas = new ArrayList<>();
 
         for (BCCDCladePartition partition : partitions) {
-            if (partition.getNumberOfOccurrences() < 2) continue;
+            if (partition.getNumberOfOccurrences() < 5) continue;
             double[] b = partition.getObservedLogBranchLengthsOld().toArray();
             double approximateSigma = new Variance().evaluate(b);
             approximateSigmas.add(approximateSigma);
@@ -152,7 +157,7 @@ public class BCCDLogNormalMLE extends ParameterEstimator<BCCD> {
                 int pIdx = this.betaGroup[i];
                 BCCDCladePartition partition = partitions.get(pIdx);
 
-                if (partition.getNumberOfOccurrences() < 2) {
+                if (partition.getNumberOfOccurrences() < 5) {
                     sigmas[i] = this.approximateSigma;
                     continue;
                 }
@@ -176,7 +181,7 @@ public class BCCDLogNormalMLE extends ParameterEstimator<BCCD> {
                 int pIdx = betaGroup[i];
                 BCCDCladePartition partition = this.partitions.get(pIdx);
 
-                setDistribution(bccd, pIdx, beta, mus[i], sigmas[i]);
+                setDistribution(partition, pIdx, beta, mus[i], sigmas[i]);
 
                 for (CladePartitionObservation observation : partition.getObservations()) {
                     logLikelihood += partition.getDistributionFunc().apply(observation).logDensity(observation.branchLengthOld());
@@ -187,9 +192,8 @@ public class BCCDLogNormalMLE extends ParameterEstimator<BCCD> {
         }
     }
 
-    private void setDistribution(BCCD bccd, int partitionIdx, double beta, double mu, double sigma) {
+    private void setDistribution(BCCDCladePartition partition, int partitionIdx, double beta, double mu, double sigma) {
         Function<CladePartitionObservation, Double> getBetaObservation = this.getBetaObservations[partitionIdx];
-        BCCDCladePartition partition = bccd.getAllPartitions().get(partitionIdx);
         partition.setDistributionFunc(
                 x -> new LogNormalDistribution(
                         mu + beta * getBetaObservation.apply(x),

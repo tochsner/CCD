@@ -732,7 +732,7 @@ public abstract class AbstractCCD implements ITreeDistribution {
     }
 
     /** @return the number of parameters this CCD model has */
-    abstract protected double getNumberOfParameters();
+    abstract public double getNumberOfParameters();
 
     /** @return the log likelihood of this CCD based on the trees it was constructed with */
     public double getLogLikelihood() {

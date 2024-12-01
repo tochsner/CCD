@@ -81,17 +81,22 @@ public class BCCDGammaMLE extends ParameterEstimator<BCCD> {
 
             for (int i = 0; i < betaGroup.length; i++) {
                 setDistribution(
-                        bccd, betaGroup[i], optimalBeta, optimalShapes[i], optimalScales[i]
+                        partitions.get(betaGroup[i]), betaGroup[i], optimalBeta, optimalShapes[i], optimalScales[i]
                 );
             }
         }
+    }
+
+    @Override
+    public int getNumberOfParameters(BCCD ccd) {
+        return 3 * ccd.getNumberOfCladePartitions();
     }
 
     private double estimateMedianApproximateShape(List<BCCDCladePartition> partitions) {
         List<Double> approximateShapes = new ArrayList<>();
 
         for (BCCDCladePartition partition : partitions) {
-            if (partition.getNumberOfOccurrences() < 2) continue;
+            if (partition.getNumberOfOccurrences() < 5) continue;
             double[] b = partition.getObservedBranchLengthsOld().toArray();
             double approximateShape = GammaDistribution.estimateShapeMLE(b, 1e-6);
             approximateShapes.add(approximateShape);
@@ -135,7 +140,7 @@ public class BCCDGammaMLE extends ParameterEstimator<BCCD> {
                 int pIdx = this.betaGroup[i];
                 BCCDCladePartition partition = partitions.get(pIdx);
 
-                if (partition.getNumberOfOccurrences() == 1) {
+                if (partition.getNumberOfOccurrences() < 5) {
                     shapes[i] = this.approximateShape;
                     continue;
                 }
@@ -174,7 +179,7 @@ public class BCCDGammaMLE extends ParameterEstimator<BCCD> {
                 int pIdx = betaGroup[i];
                 BCCDCladePartition partition = this.partitions.get(pIdx);
 
-                setDistribution(bccd, pIdx, beta, shapes[i], scales[i]);
+                setDistribution(partition, pIdx, beta, shapes[i], scales[i]);
 
                 for (CladePartitionObservation observation : partition.getObservations()) {
                     logLikelihood += partition.getDistributionFunc().apply(observation).logDensity(observation.branchLengthOld());
@@ -185,9 +190,8 @@ public class BCCDGammaMLE extends ParameterEstimator<BCCD> {
         }
     }
 
-    private void setDistribution(BCCD bccd, int partitionIdx, double beta, double shape, double scale) {
+    private void setDistribution(BCCDCladePartition partition, int partitionIdx, double beta, double shape, double scale) {
         Function<CladePartitionObservation, Double> getBetaObservation = this.getBetaObservations[partitionIdx];
-        BCCDCladePartition partition = bccd.getAllPartitions().get(partitionIdx);
         partition.setDistributionFunc(
                 x -> new GammaDistribution(
                         shape,

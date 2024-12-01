@@ -11,17 +11,18 @@ public class InverseDigamma {
         // see https://arxiv.org/pdf/1705.06547
         double initialGuess = 1 / Math.log(1 + Math.exp(-y));
 
-        IllinoisSolver solver = new IllinoisSolver();
+        IllinoisSolver solver = new IllinoisSolver(1e-5);
         try {
             return solver.solve(
                     500,
                     digammaFunction,
-                    initialGuess - 1,
-                    initialGuess + 1,
+                    initialGuess - 0.5,
+                    initialGuess + 0.5,
                     initialGuess
             );
         } catch (NoBracketingException e) {
-            throw new ArithmeticException("No solution found in the interval for value " + y);
+            return initialGuess;
+            // throw new ArithmeticException("No solution found in the interval for value " + y);
         }
     }
 }

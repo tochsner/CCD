@@ -180,13 +180,13 @@ public class SBCCD extends AbstractCCD {
     /* -- TREE LIKELIHOOD - TREE LIKELIHOOD -- */
 
     @Override
-    public double getProbabilityOfTree(Tree tree) {
+    public double getLogProbabilityOfTree(Tree tree) {
         double height = SBCCDCladePartition.getMaxDistanceToLeaf(tree.getRoot());
-        double heightDensity = this.getHeightDistribution().density(height);
+        double heightDensity = this.getHeightDistribution().logDensity(height);
 
-        double treeDensity = super.getProbabilityOfTree(tree);
+        double treeDensity = super.getLogProbabilityOfTree(tree);
 
-        return heightDensity * treeDensity;
+        return heightDensity + treeDensity;
     }
 
     /* -- STATE MANAGEMENT - STATE MANAGEMENT -- */
@@ -231,8 +231,8 @@ public class SBCCD extends AbstractCCD {
     }
 
     @Override
-    protected double getNumberOfParameters() {
-        return 3 * this.getNumberOfCladePartitions();
+    public double getNumberOfParameters() {
+        return this.estimator.getNumberOfParameters(this);
     }
 
 }
