@@ -8,8 +8,8 @@ public class BetaDistribution extends BranchLengthDistribution {
 
     public BetaDistribution(double alpha, double beta) {
         this.betaDistribution = new org.apache.commons.math3.distribution.BetaDistribution(
-                Math.max(0.5, alpha),
-                Math.max(0.5, beta)
+                Math.max(0.3, alpha),
+                Math.max(0.3, beta)
         );
     }
 
