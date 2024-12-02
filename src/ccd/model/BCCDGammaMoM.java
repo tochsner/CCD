@@ -68,7 +68,7 @@ public class BCCDGammaMoM extends ParameterEstimator<BCCD> {
             partition.setDistributionFunc(
                     x -> new GammaDistribution(
                             shape,
-                            scale * Math.exp(IntStream.range(0, this.numBetas).mapToDouble(j ->  Utils.logOrZero(this.getObservation.get(j).apply(x)) * betas[pIdx][j]).sum())
+                            scale * Math.exp(IntStream.range(0, this.numBetas).mapToDouble(j -> Utils.logOrZero(this.getObservation.get(j).apply(x)) * betas[pIdx][j]).sum())
                     )
             );
         }
@@ -76,7 +76,7 @@ public class BCCDGammaMoM extends ParameterEstimator<BCCD> {
 
     @Override
     public int getNumberOfParameters(BCCD ccd) {
-        return 3 * ccd.getNumberOfCladePartitions();
+        return 2 * ccd.getNumberOfCladePartitions() + numBetas * (this.useGlobalBeta ? 1 : ccd.getNumberOfCladePartitions());
     }
 
     public double[][] getBetas(List<BCCDCladePartition> partitions) {

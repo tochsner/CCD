@@ -37,7 +37,14 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
 
     @Override
     public int getNumberOfParameters(SBCCD ccd) {
-        return 3 * ccd.getNumberOfCladePartitions();
+        int heightParameters = 2;
+
+        int fractionParameters = 0;
+        for (Clade clade : ccd.getClades()) {
+            if (!clade.isLeaf()) fractionParameters ++;
+        }
+
+        return heightParameters + fractionParameters;
     }
 
     private void estimateHeightDistribution(SBCCD sbccd) {

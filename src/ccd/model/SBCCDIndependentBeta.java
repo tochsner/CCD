@@ -22,7 +22,15 @@ public class SBCCDIndependentBeta extends ParameterEstimator<SBCCD> {
 
     @Override
     public int getNumberOfParameters(SBCCD ccd) {
-        throw new UnsupportedOperationException();
+        int heightParameters = 2;
+
+        int fractionParameters = 0;
+        for (SBCCDCladePartition partition : ccd.getAllPartitions()) {
+            if (!partition.getChildClades()[0].isLeaf()) fractionParameters ++;
+            if (!partition.getChildClades()[1].isLeaf()) fractionParameters ++;
+        }
+
+        return heightParameters + fractionParameters;
     }
 
     private void estimateHeightDistribution(SBCCD sbccd) {
