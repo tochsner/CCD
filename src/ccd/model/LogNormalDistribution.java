@@ -40,7 +40,7 @@ public class LogNormalDistribution extends BranchLengthDistribution {
 
     @Override
     public double mode() {
-        return Math.exp(this.logMean);
+        return Math.exp(this.logMean - this.logStd*this.logStd);
     }
 
     @Override

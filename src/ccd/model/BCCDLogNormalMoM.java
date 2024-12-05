@@ -58,8 +58,6 @@ public class BCCDLogNormalMoM extends ParameterEstimator<BCCD> {
         double[] mus = this.getMus(partitions, betas);
         double[] sigmas = this.getSigmas(partitions, betas);
 
-        double[] modes = this.getModes(partitions, betas, mus, sigmas);
-
         for (int i = 0; i < partitions.size(); i++) {
             double mu = mus[i];
             double sigma = sigmas[i];
@@ -181,49 +179,5 @@ public class BCCDLogNormalMoM extends ParameterEstimator<BCCD> {
         }
 
         return sigmas;
-    }
-
-    public double[] getModes(List<BCCDCladePartition> partitions, double[][] betas, double[] mus, double[] sigmas) {
-        // build up linear system
-
-        int n = partitions.size();
-        RealMatrix A = new BlockRealMatrix(n, n);
-        RealVector b = new ArrayRealVector(n);
-
-        int rootPartition = IntStream.range(0, partitions.size()).filter(i -> partitions.get(i).getParentClade().isRoot()).findFirst().orElseThrow();
-        this.buildCoefficientMatrix(rootPartition, -1, A, b, partitions, betas, mus, sigmas);
-
-        for (BCCDCladePartition partition : partitions) {
-            // pass
-        }
-
-        return null;
-    }
-
-    private void buildCoefficientMatrix(
-            int partitionIdx,
-            int parentPartitionIdx,
-            RealMatrix A,
-            RealVector b,
-            List<BCCDCladePartition> partitions,
-            double[][] betas,
-            double[] mus,
-            double[] sigmas
-    ) {
-        if (parentPartitionIdx != -1) {
-            // take over parent coefficients
-
-            for (int i = 0; i < partitions.size(); i++) {
-                A.addToEntry(partitionIdx, i, A.getEntry(parentPartitionIdx, i) * betas[0][parentPartitionIdx]);
-            }
-
-            b.addToEntry(partitionIdx, b.getEntry(parentPartitionIdx) * betas[0][parentPartitionIdx]);
-        }
-
-        b.addToEntry(partitionIdx, -mus[partitionIdx] / sigmas[partitionIdx]);
-
-        BCCDCladePartition partition = partitions.get(partitionIdx);
-
-        // pass
     }
 }
