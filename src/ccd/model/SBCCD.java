@@ -118,7 +118,7 @@ public class SBCCD extends AbstractCCD {
             return vertex;
         }
 
-        SBCCDCladePartition partition = (SBCCDCladePartition) this.getPartitionBasedOnStrategy(clade, SamplingStrategy.Sampling);
+        SBCCDCladePartition partition = (SBCCDCladePartition) this.getPartitionBasedOnStrategy(clade, samplingStrategy);
         if (partition == null) {
             throw new AssertionError("Unsuccessful to find clade partition of clade: " + clade.getCladeInBits());
         }

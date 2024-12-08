@@ -139,14 +139,16 @@ public class SBCCDCladePartition extends CladePartition {
         if (vertex.getChild(Utils.getFirstChild(vertex)).isLeaf()) {
             firstLogBranchProbability = 0.0;
         } else {
-            firstLogBranchProbability = firstBranchLengthDistribution.logDensity(firstBranchLength / subTreeHeight) - Math.log(subTreeHeight);
+            // TODO: do we need a correction factor - log(subTreeHeight) here?
+            firstLogBranchProbability = firstBranchLengthDistribution.logDensity(firstBranchLength / subTreeHeight);
         }
 
         double secondLogBranchProbability;
         if (vertex.getChild(Utils.getSecondChild(vertex)).isLeaf()) {
             secondLogBranchProbability = 0.0;
         } else {
-            secondLogBranchProbability = secondBranchLengthDistribution.logDensity(secondBranchLength / subTreeHeight) - Math.log(subTreeHeight);
+            // TODO: do we need a correction factor - log(subTreeHeight) here?
+            secondLogBranchProbability = secondBranchLengthDistribution.logDensity(secondBranchLength / subTreeHeight);
         }
 
         return logCcdCCP + firstLogBranchProbability + secondLogBranchProbability;

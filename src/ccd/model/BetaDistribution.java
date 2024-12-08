@@ -28,7 +28,7 @@ public class BetaDistribution extends BranchLengthDistribution {
         double alpha = this.betaDistribution.getAlpha();
         double beta = this.betaDistribution.getBeta();
 
-        if (alpha < 1 || beta < 1) {
+        if (alpha <= 1 || beta <= 1) {
             throw new NoModeException();
         }
 
