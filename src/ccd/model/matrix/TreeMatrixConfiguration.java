@@ -64,23 +64,26 @@ public class TreeMatrixConfiguration {
         return clusterTree;
     }
 
+    /**
+     * Return true if the tree is compatible with the tree matrix configuration.
+     * <br>
+     * A tree is compatible if all pairs of leaves with a specified distance
+     * have a unique MRCA.
+     */
     boolean isTreeCompatible(Tree tree) {
-        // a tree is compatible if all internal nodes are specified by an MRCA of a pair of
-        // leafs with specified distance
-        boolean[] visited = new boolean[tree.getNodeCount()];
+        boolean[] usedAsMRCA = new boolean[tree.getNodeCount()];
 
-        for (int i = 0; i < n - 1; i++) {
-            Pair<Integer, Integer> distancePair = this.distancesSpecified.get(i);
+        for (Pair<Integer, Integer> distancePair : this.distancesSpecified) {
             Node node1 = tree.getNode(distancePair.getFirst());
             Node node2 = tree.getNode(distancePair.getSecond());
 
             Node mrca = TreeUtils.getCommonAncestorNode(tree, Set.of(node1.getID(), node2.getID()));
             int mrcaNr = mrca.getNr();
 
-            if (visited[mrcaNr]) {
+            if (usedAsMRCA[mrcaNr]) {
                 return false;
             } else {
-                visited[mrcaNr] = true;
+                usedAsMRCA[mrcaNr] = true;
             }
         }
 
