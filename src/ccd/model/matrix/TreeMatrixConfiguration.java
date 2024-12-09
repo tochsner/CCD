@@ -23,7 +23,7 @@ public class TreeMatrixConfiguration {
         this.taxonSet = taxonSet;
     }
 
-    double[] getDistancesForCompatibleTree(Tree tree) {
+    public double[] getDistancesForCompatibleTree(Tree tree) {
         double[] distances = new double[n - 1];
 
         for (int i = 0; i < n - 1; i++) {
@@ -39,7 +39,7 @@ public class TreeMatrixConfiguration {
         return distances;
     }
 
-    Tree getTree(double[] distances) {
+    public Tree getTree(double[] distances) {
         double [] distanceMatrix = new double[n * n];
         Arrays.fill(distanceMatrix, Double.MAX_VALUE);
 
@@ -70,7 +70,7 @@ public class TreeMatrixConfiguration {
      * A tree is compatible if all pairs of leaves with a specified distance
      * have a unique MRCA.
      */
-    boolean isTreeCompatible(Tree tree) {
+    public boolean isTreeCompatible(Tree tree) {
         boolean[] usedAsMRCA = new boolean[tree.getNodeCount()];
 
         for (Pair<Integer, Integer> distancePair : this.distancesSpecified) {
