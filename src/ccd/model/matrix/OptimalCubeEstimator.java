@@ -49,7 +49,7 @@ public class OptimalCubeEstimator extends MatrixEstimator {
                     DefaultEdge edge = matrixGraph.getEdge(i, j);
                     matrixGraph.setEdgeWeight(edge, matrixGraph.getEdgeWeight(edge) - score);
 
-                    pairwiseScoresMatrix[i][j] = score;
+                    pairwiseScoresMatrix[i][j] += score;
                 }
             }
         }

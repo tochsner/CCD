@@ -3,6 +3,8 @@ package ccd.model.matrix;
 import beast.base.evolution.tree.Tree;
 import ccd.model.HeightSettingStrategy;
 import org.apache.commons.math3.util.Pair;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleGraph;
 
 import java.util.*;
 
@@ -18,8 +20,24 @@ public class GreedyCubeEstimator extends MatrixEstimator {
         int n = tree.getLeafNodeCount();
 
         double[][] pairwiseScoresMatrix = new double[n][n];
-        SortedMap<Double, Integer>[] sortedPairwiseScores = new SortedMap[n];
 
+        for (Tree observedTree : observedTrees) {
+            SimpleGraph<Integer, DefaultEdge> treeGraph = CubeUtils.createUnweightedGraphForTree(observedTree);
+            int[][] pairwiseDistances = CubeUtils.getDistanceMatrix(treeGraph, n);
+
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (i == j) continue;
+
+                    int pathLength = pairwiseDistances[i][j];
+                    double score = Math.log(Math.pow(2, 2.0 - pathLength));
+
+                    pairwiseScoresMatrix[i][j] += score;
+                }
+            }
+        }
+
+        SortedMap<Double, Integer>[] sortedPairwiseScores = new SortedMap[n];
         double bestScore = Double.NEGATIVE_INFINITY;
         Pair<Integer, Integer> bestPair = new Pair<>(0, 1);
 
@@ -29,19 +47,12 @@ public class GreedyCubeEstimator extends MatrixEstimator {
             for (int j = 0; j < n; j++) {
                 if (i == j) continue;
 
-                double score = 0;
-
-                for (Tree observedTree : observedTrees) {
-                    int pathLength = CubeUtils.getPathLength(observedTree, i, j);
-                    score += Math.log(Math.pow(2, 1 - pathLength));
-                }
+                double score = pairwiseScoresMatrix[i][j];
 
                 if (bestScore < score) {
                     bestScore = score;
                     bestPair = new Pair<>(i, j);
                 }
-
-                pairwiseScoresMatrix[i][j] = score;
 
                 // we add a small jitter to make the keys in the sorted map unique
                 score *= 1 + 1e-6 * j;
