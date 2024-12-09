@@ -1,24 +1,30 @@
 package ccd.model.matrix;
 
+import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
+import beast.base.evolution.tree.TreeUtils;
 import ccd.model.HeightSettingStrategy;
+import org.apache.commons.math3.util.Pair;
 import org.jgrapht.Graph;
-import org.jgrapht.GraphPath;
+import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
+import org.jgrapht.alg.spanning.PrimMinimumSpanningTree;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleWeightedGraph;
-import org.jgrapht.alg.tour.HeldKarpTSP;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
-public class OptimalCubeEstimator extends MatrixEstimator {
+public class MSTMatrixEstimator extends MatrixEstimator {
     @Override
-    TreeMatrixConfiguration estimateConfiguration(MatrixCCD ccd) {
+    public TreeMatrixConfiguration estimateConfiguration(MatrixCCD ccd) {
         Tree mapTopology = ccd.getMAPTree(HeightSettingStrategy.CommonAncestorHeights);
-        TreeMatrixConfiguration configuration = this.getOptimalCube(mapTopology, ccd.getBaseTrees());
+        TreeMatrixConfiguration configuration = this.getOptimalConfiguration(mapTopology, ccd.getBaseTrees());
         return configuration;
     }
 
-    TreeMatrixConfiguration getOptimalCube(Tree tree, List<Tree> observedTrees) {
+    TreeMatrixConfiguration getOptimalConfiguration(Tree tree, List<Tree> observedTrees) {
         int n = tree.getLeafNodeCount();
 
         Graph<String, DefaultEdge> graph = new SimpleWeightedGraph<>(DefaultEdge.class);
@@ -35,8 +41,18 @@ public class OptimalCubeEstimator extends MatrixEstimator {
                 double score = 0;
 
                 for (Tree observedTree : observedTrees) {
-                    int pathLength = CubeUtils.getPathLength(observedTree, i, j);
-                    score += Math.log(Math.pow(2, 1 - pathLength));
+                    Node node1 = observedTree.getNode(i);
+                    Node node2 = observedTree.getNode(j);
+                    Node mrca = TreeUtils.getCommonAncestorNode(
+                            observedTree,
+                            Set.of(node1.getID(), node2.getID())
+                    );
+
+                    int firstCladeSize = mrca.getChild(0).getLeafNodeCount();
+                    int secondCladeSize = mrca.getChild(1).getLeafNodeCount();
+
+                    int possibleCombinations = firstCladeSize * secondCladeSize;
+                    score += Math.log(1.0 / possibleCombinations);
                 }
 
                 graph.addEdge(String.valueOf(i), String.valueOf(j));
@@ -46,18 +62,18 @@ public class OptimalCubeEstimator extends MatrixEstimator {
             }
         }
 
-        GraphPath cycle = new HeldKarpTSP().getTour(graph);
+        SpanningTreeAlgorithm.SpanningTree cycle = new PrimMinimumSpanningTree(graph).getSpanningTree();
 
-        LinkedList<Integer> order = new LinkedList<>();
-        for (Object vertex : cycle.getVertexList()) {
-            order.add(Integer.parseInt((String) vertex));
+        List<Pair<Integer, Integer>> specifiedDistances = new ArrayList<>();
+        for (Object edge : cycle.getEdges()) {
+            specifiedDistances.add(new Pair<>(
+                    Integer.parseInt(graph.getEdgeSource((DefaultEdge) edge)),
+                    Integer.parseInt(graph.getEdgeTarget((DefaultEdge) edge))
+            ));
         }
-        order.remove(n);
-
-        this.optimizeOrderToBeCompatible(tree, order, n, pairwiseScoresMatrix);
 
         return CubeUtils.getConfiguration(
-                order.stream().mapToInt(i -> i).toArray(), tree
+                specifiedDistances, tree
         );
     }
 

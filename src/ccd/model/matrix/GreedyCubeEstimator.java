@@ -8,7 +8,7 @@ import java.util.*;
 
 public class GreedyCubeEstimator extends MatrixEstimator {
     @Override
-    TreeMatrixConfiguration estimateConfiguration(MatrixCCD ccd) {
+    public TreeMatrixConfiguration estimateConfiguration(MatrixCCD ccd) {
         Tree mapTopology = ccd.getMAPTree(HeightSettingStrategy.CommonAncestorHeights);
         TreeMatrixConfiguration configuration = this.getGreedyCube(mapTopology, ccd.getBaseTrees());
         return configuration;

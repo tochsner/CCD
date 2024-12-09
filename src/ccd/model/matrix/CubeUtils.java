@@ -6,6 +6,12 @@ import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.TreeUtils;
 import org.apache.commons.math3.util.Pair;
+import org.jgrapht.Graph;
+import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleGraph;
+import org.jgrapht.graph.SimpleWeightedGraph;
+import org.jgrapht.alg.shortestpath.BFSShortestPath;
 
 import java.util.*;
 
@@ -13,9 +19,24 @@ public class CubeUtils {
     static TreeMatrixConfiguration getConfiguration(int[] order, Tree tree) {
         List<Pair<Integer, Integer>> distancesSpecified = new ArrayList<>();
         for (int i = 0; i < order.length - 1; i++) {
-            distancesSpecified.add(new Pair<>(order[i], order[i+1]));
+            distancesSpecified.add(new Pair<>(order[i], order[i + 1]));
         }
 
+        List<Taxon> taxaNames = new ArrayList<>();
+        for (int i = 0; i < tree.getLeafNodeCount(); i++) {
+            taxaNames.add(new Taxon(String.valueOf(i)));
+        }
+        TaxonSet taxonSet = new TaxonSet(taxaNames);
+
+        TreeMatrixConfiguration configuration = new TreeMatrixConfiguration(
+                tree.getLeafNodeCount(),
+                distancesSpecified,
+                taxonSet
+        );
+        return configuration;
+    }
+
+    static TreeMatrixConfiguration getConfiguration(List<Pair<Integer, Integer>> distancesSpecified, Tree tree) {
         List<Taxon> taxaNames = new ArrayList<>();
         for (int i = 0; i < tree.getLeafNodeCount(); i++) {
             taxaNames.add(new Taxon(String.valueOf(i)));
@@ -50,5 +71,36 @@ public class CubeUtils {
         }
 
         return 1 + mrcaToNode1 + mrcaToNode2;
+    }
+
+    static SimpleGraph createUnweightedGraphForTree(Tree tree) {
+        SimpleGraph<Integer, DefaultEdge> graph = new SimpleGraph<>(DefaultEdge.class);
+        createGraphForVertex(graph, tree.getRoot());
+        return graph;
+    }
+
+    static void createGraphForVertex(SimpleGraph graph, Node vertex) {
+        graph.addVertex(vertex.getNr());
+
+        for (Node child : vertex.getChildren()) {
+            createGraphForVertex(graph, child);
+            graph.addEdge(vertex.getNr(), child.getNr());
+        }
+    }
+
+    public static int[][] getDistanceMatrix(SimpleGraph<Integer, DefaultEdge> tree, int numLeaves) {
+        int[][] distances = new int[numLeaves][numLeaves];
+
+        BFSShortestPath bfs = new BFSShortestPath(tree);
+
+        for (int i = 0; i < numLeaves; i++) {
+            ShortestPathAlgorithm.SingleSourcePaths<Integer, DefaultEdge> vertexDistances = bfs.getPaths(i);
+
+            for (int j = 0; j < numLeaves; j++) {
+                distances[i][j] = (int) vertexDistances.getWeight(j);
+            }
+        }
+
+        return distances;
     }
 }

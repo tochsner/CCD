@@ -27,7 +27,7 @@ public abstract class MatrixEstimator extends ParameterEstimator<MatrixCCD> {
         ccd.setCubeDistribution(cubeDistribution);
     }
 
-    abstract TreeMatrixConfiguration estimateConfiguration(MatrixCCD ccd);
+    public abstract TreeMatrixConfiguration estimateConfiguration(MatrixCCD ccd);
 
     MultivariateNormalDistribution estimateDistribution(MatrixCCD ccd, TreeMatrixConfiguration configuration) {
         List<Tree> compatibleTrees = new ArrayList<>();

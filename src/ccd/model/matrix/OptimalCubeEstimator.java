@@ -5,6 +5,7 @@ import ccd.model.HeightSettingStrategy;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.graph.SimpleWeightedGraph;
 import org.jgrapht.alg.tour.HeldKarpTSP;
 
@@ -12,7 +13,7 @@ import java.util.*;
 
 public class OptimalCubeEstimator extends MatrixEstimator {
     @Override
-    TreeMatrixConfiguration estimateConfiguration(MatrixCCD ccd) {
+    public TreeMatrixConfiguration estimateConfiguration(MatrixCCD ccd) {
         Tree mapTopology = ccd.getMAPTree(HeightSettingStrategy.CommonAncestorHeights);
         TreeMatrixConfiguration configuration = this.getOptimalCube(mapTopology, ccd.getBaseTrees());
         return configuration;
@@ -21,36 +22,43 @@ public class OptimalCubeEstimator extends MatrixEstimator {
     TreeMatrixConfiguration getOptimalCube(Tree tree, List<Tree> observedTrees) {
         int n = tree.getLeafNodeCount();
 
-        Graph<String, DefaultEdge> graph = new SimpleWeightedGraph<>(DefaultEdge.class);
+        Graph<Integer, DefaultEdge> matrixGraph = new SimpleWeightedGraph<>(DefaultEdge.class);
         for (int i = 0; i < n; i++) {
-            graph.addVertex(String.valueOf(i));
+            matrixGraph.addVertex(i);
+        }
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i != j) matrixGraph.addEdge(i, j);
+            }
         }
 
         double[][] pairwiseScoresMatrix = new double[n][n];
 
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (i == j) continue;
+        for (Tree observedTree : observedTrees) {
+            SimpleGraph<Integer, DefaultEdge> treeGraph = CubeUtils.createUnweightedGraphForTree(observedTree);
+            int[][] pairwiseDistances = CubeUtils.getDistanceMatrix(treeGraph, n);
 
-                double score = 0;
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (i == j) continue;
 
-                for (Tree observedTree : observedTrees) {
-                    int pathLength = CubeUtils.getPathLength(observedTree, i, j);
-                    score += Math.log(Math.pow(2, 1 - pathLength));
+                    int pathLength = pairwiseDistances[i][j];
+                    double score = Math.log(Math.pow(2, 2.0 - pathLength));
+
+                    DefaultEdge edge = matrixGraph.getEdge(i, j);
+                    matrixGraph.setEdgeWeight(edge, matrixGraph.getEdgeWeight(edge) - score);
+
+                    pairwiseScoresMatrix[i][j] = score;
                 }
-
-                graph.addEdge(String.valueOf(i), String.valueOf(j));
-                graph.setEdgeWeight(graph.getEdge(String.valueOf(i), String.valueOf(j)), -score);
-
-                pairwiseScoresMatrix[i][j] = score;
             }
         }
 
-        GraphPath cycle = new HeldKarpTSP().getTour(graph);
+        GraphPath cycle = new HeldKarpTSP().getTour(matrixGraph);
 
         LinkedList<Integer> order = new LinkedList<>();
         for (Object vertex : cycle.getVertexList()) {
-            order.add(Integer.parseInt((String) vertex));
+            order.add((Integer) vertex);
         }
         order.remove(n);
 

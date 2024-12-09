@@ -15,7 +15,7 @@ public class RandomCubeEstimator extends MatrixEstimator {
     static Random random = new Random();
 
     @Override
-    TreeMatrixConfiguration estimateConfiguration(MatrixCCD ccd) {
+    public TreeMatrixConfiguration estimateConfiguration(MatrixCCD ccd) {
         Tree mapTopology = ccd.getMAPTree(HeightSettingStrategy.CommonAncestorHeights);
         TreeMatrixConfiguration configuration = this.getRandomCompatibleCube(mapTopology);
         return configuration;
