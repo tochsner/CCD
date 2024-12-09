@@ -20,11 +20,11 @@ public class MSTMatrixEstimator extends MatrixEstimator {
     @Override
     public TreeMatrixConfiguration estimateConfiguration(MatrixCCD ccd) {
         Tree mapTopology = ccd.getMAPTree(HeightSettingStrategy.CommonAncestorHeights);
-        TreeMatrixConfiguration configuration = this.getOptimalConfiguration(mapTopology, ccd.getBaseTrees());
+        TreeMatrixConfiguration configuration = this.getMSTConfiguration(mapTopology, ccd.getBaseTrees());
         return configuration;
     }
 
-    TreeMatrixConfiguration getOptimalConfiguration(Tree tree, List<Tree> observedTrees) {
+    TreeMatrixConfiguration getMSTConfiguration(Tree tree, List<Tree> observedTrees) {
         int n = tree.getLeafNodeCount();
 
         Graph<String, DefaultEdge> graph = new SimpleWeightedGraph<>(DefaultEdge.class);
@@ -52,13 +52,15 @@ public class MSTMatrixEstimator extends MatrixEstimator {
                     int secondCladeSize = mrca.getChild(1).getLeafNodeCount();
 
                     int possibleCombinations = firstCladeSize * secondCladeSize;
-                    score += Math.log(1.0 / possibleCombinations);
+                    score += 1.0 / possibleCombinations / observedTrees.size();
                 }
 
-                graph.addEdge(String.valueOf(i), String.valueOf(j));
-                graph.setEdgeWeight(graph.getEdge(String.valueOf(i), String.valueOf(j)), -score);
+                double logScore = Math.log(score);
 
-                pairwiseScoresMatrix[i][j] = score;
+                graph.addEdge(String.valueOf(i), String.valueOf(j));
+                graph.setEdgeWeight(graph.getEdge(String.valueOf(i), String.valueOf(j)), -logScore);
+
+                pairwiseScoresMatrix[i][j] = logScore;
             }
         }
 
@@ -75,40 +77,5 @@ public class MSTMatrixEstimator extends MatrixEstimator {
         return CubeUtils.getConfiguration(
                 specifiedDistances, tree
         );
-    }
-
-    private static void optimizeOrderToBeCompatible(Tree tree, LinkedList<Integer> greedyOrder, int n, double[][] pairwiseScoresMatrix) {
-        int bestFirstLeaf = greedyOrder.getFirst();
-        double bestRotationScore = Double.NEGATIVE_INFINITY;
-
-        for (int offset = 0; offset < n; offset++) {
-            TreeMatrixConfiguration configuration = CubeUtils.getConfiguration(
-                    greedyOrder.stream().mapToInt(i -> i).toArray(), tree
-            );
-            if (!configuration.isTreeCompatible(tree)) {
-                // rotate by one
-                greedyOrder.addLast(greedyOrder.pollFirst());
-                continue;
-            }
-
-            double offsetScore = 0;
-            for (int i = 0; i < n - 1; i++) {
-                int firstLeaf = greedyOrder.get(i);
-                int secondLeaf = greedyOrder.get(i + 1);
-                offsetScore += pairwiseScoresMatrix[firstLeaf][secondLeaf];
-            }
-
-            if (bestRotationScore < offsetScore) {
-                bestRotationScore = offsetScore;
-                bestFirstLeaf = greedyOrder.getFirst();
-            }
-
-            // rotate by one
-            greedyOrder.addLast(greedyOrder.pollFirst());
-        }
-
-        while (greedyOrder.getFirst() != bestFirstLeaf) {
-            greedyOrder.addLast(greedyOrder.pollFirst());
-        }
     }
 }
