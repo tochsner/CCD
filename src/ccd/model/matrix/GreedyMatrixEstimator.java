@@ -9,6 +9,7 @@ import org.jgrapht.Graph;
 import org.jgrapht.alg.interfaces.SpanningTreeAlgorithm;
 import org.jgrapht.alg.spanning.PrimMinimumSpanningTree;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
 import java.util.ArrayList;
@@ -31,21 +32,16 @@ public class GreedyMatrixEstimator extends MatrixEstimator {
         double[][][] pairwiseScoresPerTree = new double[n][n][observedTrees.size()];
         Node[][][] mrcas = new Node[n][n][observedTrees.size()];
 
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (i == j) continue;
+        for (int t = 0; t < observedTrees.size(); t++) {
+            Tree observedTree = observedTrees.get(t);
+            SimpleGraph<Integer, DefaultEdge> treeGraph = CubeUtils.createUnweightedGraphForTree(observedTree);
+            int[][] treeMrcas = CubeUtils.getMrcas(treeGraph, n, observedTree.getRoot().getNr());
 
-                double score = 0;
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (i == j) continue;
 
-                for (int t = 0; t < observedTrees.size(); t++) {
-                    Tree observedTree = observedTrees.get(t);
-
-                    Node node1 = observedTree.getNode(i);
-                    Node node2 = observedTree.getNode(j);
-                    Node mrca = TreeUtils.getCommonAncestorNode(
-                            observedTree,
-                            Set.of(node1.getID(), node2.getID())
-                    );
+                    Node mrca = observedTree.getNode(treeMrcas[i][j]);
                     mrcas[i][j][t] = mrca;
 
                     int firstCladeSize = mrca.getChild(0).getLeafNodeCount();
@@ -54,11 +50,9 @@ public class GreedyMatrixEstimator extends MatrixEstimator {
                     int possibleCombinations = firstCladeSize * secondCladeSize;
                     double treeScore = 1.0 / possibleCombinations / observedTrees.size();
 
-                    score += treeScore;
+                    pairwiseScoresMatrix[i][j] += treeScore;
                     pairwiseScoresPerTree[i][j][t] = treeScore;
                 }
-
-                pairwiseScoresMatrix[i][j] = score;
             }
         }
 

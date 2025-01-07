@@ -7,6 +7,7 @@ import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.TreeUtils;
 import org.apache.commons.math3.util.Pair;
 import org.jgrapht.Graph;
+import org.jgrapht.GraphPath;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
@@ -102,5 +103,30 @@ public class CubeUtils {
         }
 
         return distances;
+    }
+
+    public static int[][] getMrcas(SimpleGraph<Integer, DefaultEdge> tree, int numLeaves, int root) {
+        BFSShortestPath bfs = new BFSShortestPath(tree);
+        ShortestPathAlgorithm.SingleSourcePaths<Integer, DefaultEdge> pathsFromRoot = bfs.getPaths(root);
+
+        int[][] mrcas = new int[numLeaves][numLeaves];
+
+        for (int i = 0; i < numLeaves; i++) {
+            List<Integer> pathFromRoot1 = pathsFromRoot.getPath(i).getVertexList();
+
+            for (int j = i + 1; j < numLeaves; j++) {
+                List<Integer> pathFromRoot2 = pathsFromRoot.getPath(j).getVertexList();
+
+                for (int k = 0; k < pathFromRoot1.size(); k++) {
+                    if (pathFromRoot1.get(k) != pathFromRoot2.get(k)) {
+                        mrcas[i][j] = pathFromRoot1.get(k - 1);
+                        mrcas[j][i] = pathFromRoot1.get(k - 1);
+                        break;
+                    }
+                }
+            }
+        }
+
+        return  mrcas;
     }
 }
