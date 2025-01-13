@@ -7,12 +7,20 @@ public class Utils {
         return value == 0.0 ? 0.0 : Math.log(value);
     }
 
+    public static <T extends CladePartition> Clade getFirstClade(T partition) {
+        return Utils.getFirstClade(partition.getChildClades()[0], partition.getChildClades()[1]);
+    }
+
     public static <T extends Clade> T getFirstClade(T clade1, T clade2) {
         if (clade1.getCladeInBits().nextSetBit(0) < clade2.getCladeInBits().nextSetBit(0)) {
             return clade1;
         } else {
             return clade2;
         }
+    }
+
+    public static <T extends CladePartition> Clade getSecondClade(T partition) {
+        return Utils.getSecondClade(partition.getChildClades()[0], partition.getChildClades()[1]);
     }
 
     public static <T extends Clade> T getSecondClade(T clade1, T clade2) {

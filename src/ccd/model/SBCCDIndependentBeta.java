@@ -66,7 +66,7 @@ public class SBCCDIndependentBeta extends ParameterEstimator<SBCCD> {
                 continue;
             }
 
-            if (!partition.getChildClades()[0].isLeaf()) {
+            if (!Utils.getFirstClade(partition).isLeaf()) {
                 double[] firstBranchRatios = partition.getObservations().stream().mapToDouble(x -> x.branchLengthLeft() / x.subTreeHeight()).toArray();
 
                 double alpha = BetaDistribution.estimateAlpha(firstBranchRatios);
@@ -79,7 +79,7 @@ public class SBCCDIndependentBeta extends ParameterEstimator<SBCCD> {
                 allBetas.add(beta);
             }
 
-            if (!partition.getChildClades()[1].isLeaf()) {
+            if (!Utils.getFirstClade(partition).isLeaf()) {
                 double[] secondBranchRatios = partition.getObservations().stream().mapToDouble(x -> x.branchLengthRight() / x.subTreeHeight()).toArray();
 
                 double alpha = BetaDistribution.estimateAlpha(secondBranchRatios);
@@ -100,12 +100,12 @@ public class SBCCDIndependentBeta extends ParameterEstimator<SBCCD> {
         for (int i : idxWithoutEnoughData) {
             SBCCDCladePartition partition = partitions.get(i);
 
-            if (!partition.getChildClades()[0].isLeaf()) {
+            if (!Utils.getFirstClade(partition).isLeaf()) {
                 partition.setFirstBranchAlpha(medianAlpha);
                 partition.setFirstBranchBeta(medianBeta);
             }
 
-            if (!partition.getChildClades()[1].isLeaf()) {
+            if (!Utils.getSecondClade(partition).isLeaf()) {
                 partition.setSecondBranchAlpha(medianAlpha);
                 partition.setSecondBranchBeta(medianBeta);
             }

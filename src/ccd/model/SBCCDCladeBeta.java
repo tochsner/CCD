@@ -9,16 +9,6 @@ import java.util.stream.DoubleStream;
 
 public class SBCCDCladeBeta extends ParameterEstimator<SBCCD> {
 
-    double K;
-
-    public SBCCDCladeBeta() {
-        this(10.0);
-    }
-
-    public SBCCDCladeBeta(double K) {
-        this.K = K;
-    }
-
     @Override
     public SBCCD buildCCD(int numLeaves, boolean storeBaseTrees) {
         return new SBCCD(numLeaves, storeBaseTrees, this);
@@ -81,16 +71,14 @@ public class SBCCDCladeBeta extends ParameterEstimator<SBCCD> {
             cladeBetas.put(cladeBitSet, cladeBeta);
         }
 
-        assert cladeAlphas.size() == sbccd.getNumberOfClades();
-
         // set clade partition parameters
 
         double meanAlpha = cladeAlphas.values().stream().mapToDouble(x -> x).sum() / cladeAlphas.size();
-        double meanBeta = cladeBetas.values().stream().mapToDouble(x -> x).sum() / cladeAlphas.size();
+        double meanBeta = cladeBetas.values().stream().mapToDouble(x -> x).sum() / cladeBetas.size();
 
         for (SBCCDCladePartition partition : sbccd.getAllPartitions()) {
-            Clade firstClade = partition.getChildClades()[0];
-            Clade secondClade = partition.getChildClades()[1];
+            Clade firstClade = Utils.getFirstClade(partition);
+            Clade secondClade = Utils.getSecondClade(partition);
 
             if (!firstClade.isLeaf()) {
                 double alpha = cladeAlphas.getOrDefault(firstClade.getCladeInBits(), meanAlpha);
@@ -115,9 +103,9 @@ public class SBCCDCladeBeta extends ParameterEstimator<SBCCD> {
             for (CladePartition partition : parent.getPartitions()) {
                 List<SBCCDCladePartitionObservation> observations = ((SBCCDCladePartition) partition).getObservations();
                 for (SBCCDCladePartitionObservation observation : observations) {
-                    if (partition.getChildClades()[0] == clade) {
+                    if (Utils.getFirstClade(partition) == clade) {
                         observedFractions.add(observation.branchLengthLeft() / observation.subTreeHeight());
-                    } else if (partition.getChildClades()[1] == clade) {
+                    } else if (Utils.getSecondClade(partition) == clade) {
                         observedFractions.add(observation.branchLengthRight() / observation.subTreeHeight());
                     }
                 }

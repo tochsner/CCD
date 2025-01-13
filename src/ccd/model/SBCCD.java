@@ -123,8 +123,8 @@ public class SBCCD extends AbstractCCD {
             throw new AssertionError("Unsuccessful to find clade partition of clade: " + clade.getCladeInBits());
         }
 
-        Clade firstClade = partition.getChildClades()[0];
-        Clade secondClade = partition.getChildClades()[1];
+        Clade firstClade = Utils.getFirstClade(partition);
+        Clade secondClade = Utils.getSecondClade(partition);
 
         double firstVertexHeight;
         double secondVertexHeight;

@@ -98,8 +98,8 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
         for (SBCCDCladePartition partition : sbccd.getAllPartitions()) {
             BitSet parentClade = partition.getParentClade().getCladeInBits();
 
-            Clade firstClade = partition.getChildClades()[0];
-            Clade secondClade = partition.getChildClades()[1];
+            Clade firstClade = Utils.getFirstClade(partition);
+            Clade secondClade = Utils.getSecondClade(partition);
 
             double parentAlpha = cladeAlphas.get(parentClade);
 
@@ -139,10 +139,10 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
             for (CladePartition partition : parent.getPartitions()) {
                 List<SBCCDCladePartitionObservation> observations = ((SBCCDCladePartition) partition).getObservations();
                 for (SBCCDCladePartitionObservation observation : observations) {
-                    if (partition.getChildClades()[0] == clade) {
+                    if (Utils.getFirstClade(partition) == clade) {
                         observedFractions.add(observation.branchLengthLeft() / observation.subTreeHeight());
                         parentAlphas.add(parentAlpha);
-                    } else if (partition.getChildClades()[1] == clade) {
+                    } else if (Utils.getSecondClade(partition) == clade) {
                         observedFractions.add(observation.branchLengthRight() / observation.subTreeHeight());
                         parentAlphas.add(parentAlpha);
                     }
