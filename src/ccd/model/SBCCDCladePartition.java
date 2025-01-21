@@ -29,7 +29,7 @@ public class SBCCDCladePartition extends CladePartition {
         double childHeight = vertex.getChild(childIndex).getHeight();
 
         if (vertexHeight - childHeight < 0)
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Negative branch length found.");
 
         return vertexHeight - childHeight;
     }

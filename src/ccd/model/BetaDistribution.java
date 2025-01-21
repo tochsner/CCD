@@ -17,19 +17,23 @@ public class BetaDistribution extends BranchLengthDistribution {
 
     public BetaDistribution(double alpha, double beta) {
         this.betaDistribution = new org.apache.commons.math3.distribution.BetaDistribution(
-                Math.max(0.3, alpha),
-                Math.max(0.3, beta)
+                Math.max(1e-5, alpha),
+                Math.max(1e-5, beta)
         );
     }
 
     @Override
     public double density(double value) {
-        return this.betaDistribution.density(value);
+        return this.betaDistribution.density(
+                Math.max(1e-5, Math.min(1 - 1e-5, value))
+        );
     }
 
     @Override
     public double logDensity(double value) {
-        return this.betaDistribution.logDensity(value);
+        return this.betaDistribution.logDensity(
+                Math.max(1e-5, Math.min(1 - 1e-5, value))
+        );
     }
 
     @Override
@@ -61,6 +65,9 @@ public class BetaDistribution extends BranchLengthDistribution {
         double mean = new Mean().evaluate(observations);
         double variance = new Variance().evaluate(observations);
 
+        if (variance >= mean * (1 - mean))
+            throw new IllegalArgumentException("Beta parameters could not be estimated.");
+
         return mean * (mean * (1 - mean) / variance - 1);
     }
 
@@ -70,6 +77,9 @@ public class BetaDistribution extends BranchLengthDistribution {
 
         double mean = new Mean().evaluate(observations);
         double variance = new Variance().evaluate(observations);
+
+        if (variance >= mean * (1 - mean))
+            throw new IllegalArgumentException("Beta parameters could not be estimated.");
 
         return (1 - mean) * (mean * (1 - mean) / variance - 1);
     }

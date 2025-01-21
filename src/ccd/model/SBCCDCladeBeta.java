@@ -56,7 +56,7 @@ public class SBCCDCladeBeta extends ParameterEstimator<SBCCD> {
         Map<BitSet, Double> cladeBetas = new HashMap<>();
 
         for (Clade clade : sbccd.getClades()) {
-            if (clade.isRoot()) continue;
+            if (clade.isRoot() || clade.isLeaf()) continue;
 
             BitSet cladeBitSet = clade.getCladeInBits();
 

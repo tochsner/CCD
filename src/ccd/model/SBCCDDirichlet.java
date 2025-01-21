@@ -208,14 +208,14 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
             double alpha = solver.solve(
                     500,
                     alphaFunction,
-                    0.01,
-                    maxAlpha - 0.01,
+                    1e-4,
+                    maxAlpha - 1e-4,
                     initialGuess
             );
             return alpha;
         } catch (NoBracketingException e) {
-            return maxAlpha - 0.1;
-//            throw new ArithmeticException("No solution found in the interval for value.");
+            System.err.println("No solution found for Dirichlet parameter.");
+            return maxAlpha - 1e-4;
         }
     }
 }
