@@ -73,10 +73,7 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
             }
         }
 
-        double K = sumK / normalization;
-        System.out.println("K is " + K);
-
-        return K;
+        return sumK / normalization;
     }
 
     @Override

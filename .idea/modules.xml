@@ -2,9 +2,12 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../BEASTLabs/BEASTLabs.iml" filepath="$PROJECT_DIR$/../BEASTLabs/BEASTLabs.iml" />
       <module fileurl="file://$PROJECT_DIR$/../BeastFX/BeastFX.iml" filepath="$PROJECT_DIR$/../BeastFX/BeastFX.iml" />
       <module fileurl="file://$PROJECT_DIR$/CCD.iml" filepath="$PROJECT_DIR$/CCD.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../CCD0LimitedExpansion/CCD0LimitedExpansion.iml" filepath="$PROJECT_DIR$/../CCD0LimitedExpansion/CCD0LimitedExpansion.iml" />
       <module fileurl="file://$PROJECT_DIR$/../CCP/CCP.iml" filepath="$PROJECT_DIR$/../CCP/CCP.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../asm/asm.iml" filepath="$PROJECT_DIR$/../asm/asm.iml" />
       <module fileurl="file://$PROJECT_DIR$/../beast2/beast2.iml" filepath="$PROJECT_DIR$/../beast2/beast2.iml" />
     </modules>
   </component>
