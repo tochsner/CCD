@@ -111,14 +111,14 @@ public class SBCCDCladePartition extends CladePartition {
         if (vertex.getChild(Utils.getFirstChild(vertex)).isLeaf()) {
             firstBranchProbability = 1.0;
         } else {
-            firstBranchProbability = firstBranchLengthDistribution.density(firstBranchLength / subTreeHeight) / subTreeHeight;
+            firstBranchProbability = firstBranchLengthDistribution.density(firstBranchLength / subTreeHeight);
         }
 
         double secondBranchProbability;
         if (vertex.getChild(Utils.getSecondChild(vertex)).isLeaf()) {
             secondBranchProbability = 1.0;
         } else {
-            secondBranchProbability = secondBranchLengthDistribution.density(secondBranchLength / subTreeHeight) / subTreeHeight;
+            secondBranchProbability = secondBranchLengthDistribution.density(secondBranchLength / subTreeHeight);
         }
 
         return ccdCCP * firstBranchProbability * secondBranchProbability;
@@ -139,7 +139,6 @@ public class SBCCDCladePartition extends CladePartition {
         if (vertex.getChild(Utils.getFirstChild(vertex)).isLeaf()) {
             firstLogBranchProbability = 0.0;
         } else {
-            // TODO: do we need a correction factor - log(subTreeHeight) here?
             firstLogBranchProbability = firstBranchLengthDistribution.logDensity(firstBranchLength / subTreeHeight);
         }
 
@@ -147,7 +146,6 @@ public class SBCCDCladePartition extends CladePartition {
         if (vertex.getChild(Utils.getSecondChild(vertex)).isLeaf()) {
             secondLogBranchProbability = 0.0;
         } else {
-            // TODO: do we need a correction factor - log(subTreeHeight) here?
             secondLogBranchProbability = secondBranchLengthDistribution.logDensity(secondBranchLength / subTreeHeight);
         }
 

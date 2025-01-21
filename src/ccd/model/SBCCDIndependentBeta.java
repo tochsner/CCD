@@ -79,7 +79,7 @@ public class SBCCDIndependentBeta extends ParameterEstimator<SBCCD> {
                 allBetas.add(beta);
             }
 
-            if (!Utils.getFirstClade(partition).isLeaf()) {
+            if (!Utils.getSecondClade(partition).isLeaf()) {
                 double[] secondBranchRatios = partition.getObservations().stream().mapToDouble(x -> x.branchLengthRight() / x.subTreeHeight()).toArray();
 
                 double alpha = BetaDistribution.estimateAlpha(secondBranchRatios);

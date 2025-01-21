@@ -1,23 +1,18 @@
 package ccd.model;
 
-import beast.base.evolution.tree.Node;
-import beast.base.evolution.tree.Tree;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.solvers.IllinoisSolver;
 import org.apache.commons.math3.exception.NoBracketingException;
-import org.apache.commons.math3.stat.descriptive.rank.Median;
 
-import java.sql.SQLOutput;
 import java.util.*;
 import java.util.stream.DoubleStream;
 
 
 public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
 
-    double K;
+    Double K = null;
 
     public SBCCDDirichlet() {
-        this(10.0);
     }
 
     public SBCCDDirichlet(double K) {
@@ -31,8 +26,57 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
 
     @Override
     public void estimateParameters(SBCCD sbccd) {
+        Double K = this.K;
+        if (K == null) {
+            K = estimateK(sbccd);
+        }
+
         this.estimateHeightDistribution(sbccd);
-        this.estimatePartitionParameters(sbccd);
+        this.estimatePartitionParameters(sbccd, K);
+    }
+
+    private static double estimateK(SBCCD sbccd) {
+        double sumK = 0.0;
+        double normalization = 0.0;
+
+        for (SBCCDCladePartition partition : sbccd.getAllPartitions()) {
+            if (partition.getNumberOfOccurrences() < 5) {
+                continue;
+            }
+
+            if (!Utils.getFirstClade(partition).isLeaf()) {
+                double[] firstBranchRatios = partition.getObservations().stream().mapToDouble(x -> x.branchLengthLeft() / x.subTreeHeight()).toArray();
+
+                double alpha = BetaDistribution.estimateAlpha(firstBranchRatios);
+                double beta = BetaDistribution.estimateBeta(firstBranchRatios);
+
+                double K = alpha + beta;
+
+                if (!Double.isNaN(K)) {
+                    sumK += K * partition.getNumberOfOccurrences();
+                    normalization += partition.getNumberOfOccurrences();
+                }
+            }
+
+            if (!Utils.getSecondClade(partition).isLeaf()) {
+                double[] secondBranchRatios = partition.getObservations().stream().mapToDouble(x -> x.branchLengthRight() / x.subTreeHeight()).toArray();
+
+                double alpha = BetaDistribution.estimateAlpha(secondBranchRatios);
+                double beta = BetaDistribution.estimateBeta(secondBranchRatios);
+
+                double K = alpha + beta;
+
+                if (!Double.isNaN(K)) {
+                    sumK += K * partition.getNumberOfOccurrences();
+                    normalization += partition.getNumberOfOccurrences();
+                }
+            }
+        }
+
+        double K = sumK / normalization;
+        System.out.println("K is " + K);
+
+        return K;
     }
 
     @Override
@@ -41,13 +85,13 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
 
         int fractionParameters = 0;
         for (Clade clade : ccd.getClades()) {
-            if (!clade.isLeaf()) fractionParameters ++;
+            if (!clade.isLeaf()) fractionParameters++;
         }
 
         return heightParameters + fractionParameters;
     }
 
-    private void estimateHeightDistribution(SBCCD sbccd) {
+    private static void estimateHeightDistribution(SBCCD sbccd) {
         Clade rootClade = sbccd.getRootClade();
 
         DoubleStream observedHeights = DoubleStream.empty();
@@ -66,7 +110,7 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
         sbccd.setHeightDistribution(heightDistribution);
     }
 
-    private void estimatePartitionParameters(SBCCD sbccd) {
+    private static void estimatePartitionParameters(SBCCD sbccd, double K) {
         Map<BitSet, Double> cladeAlphas = new HashMap<>();
 
         for (Clade outerClade : sbccd.getClades()) {
@@ -86,7 +130,7 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
 
                 if (hasUnknownParentClade) continue;
 
-                double cladeAlpha = this.estimateCladeAlpha(clade, cladeAlphas);
+                double cladeAlpha = estimateCladeAlpha(clade, cladeAlphas, K);
                 cladeAlphas.put(cladeBitSet, cladeAlpha);
             }
         }
@@ -117,7 +161,7 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
         }
     }
 
-    private double estimateCladeAlpha(Clade clade, Map<BitSet, Double> existingCladeAlphas) {
+    private static double estimateCladeAlpha(Clade clade, Map<BitSet, Double> existingCladeAlphas, double K) {
         if (clade.isRoot()) {
             return K;
         }
@@ -158,7 +202,7 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
         double logF = observedFractions.stream().mapToDouble(x -> Math.log(x)).sum();
         double logOneMinusF = observedFractions.stream().mapToDouble(x -> Math.log(1 - x)).sum();
 
-        UnivariateFunction alphaFunction = alpha -> n*Digamma.value(alpha) - parentAlphas.stream().mapToDouble(x -> Digamma.value(x - alpha)).sum() + logF - logOneMinusF;
+        UnivariateFunction alphaFunction = alpha -> n * Digamma.value(alpha) - parentAlphas.stream().mapToDouble(x -> Digamma.value(x - alpha)).sum() + logF - logOneMinusF;
 
         double maxAlpha = parentAlphas.stream().mapToDouble(x -> x).min().orElseThrow();
         double initialGuess = maxAlpha / 2;
