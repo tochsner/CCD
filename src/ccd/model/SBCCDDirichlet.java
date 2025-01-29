@@ -12,8 +12,7 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
 
     Double K = null;
 
-    public SBCCDDirichlet() {
-    }
+    public SBCCDDirichlet() {}
 
     public SBCCDDirichlet(double K) {
         this.K = K;

@@ -1,6 +1,7 @@
 package ccd.model;
 
 import beast.base.evolution.tree.Node;
+import javafx.scene.input.ScrollEvent;
 
 public class Utils {
     public static double logOrZero(double value) {
@@ -58,5 +59,21 @@ public class Utils {
             return vertex.getNr();
         else
             return vertex.getAllLeafNodes().stream().mapToInt(x -> x.getNr()).min().orElseThrow();
+    }
+
+    public static double getTimeSinceLastSplit(Node vertex) {
+        double timeSinceLastSplit = Double.POSITIVE_INFINITY;
+
+        for (Node child : vertex.getChildren()) {
+            double currentTimeSinceLastSplit;
+            if (child.isLeaf()) {
+                currentTimeSinceLastSplit = vertex.getHeight() - child.getHeight();
+            } else {
+                currentTimeSinceLastSplit = getTimeSinceLastSplit(child);
+            }
+            timeSinceLastSplit = Math.min(currentTimeSinceLastSplit, timeSinceLastSplit);
+        }
+
+        return timeSinceLastSplit;
     }
 }
