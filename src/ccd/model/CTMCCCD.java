@@ -78,19 +78,74 @@ public class CTMCCCD extends AbstractCCD {
             throw new UnsupportedOperationException();
         }
 
-        Node root = this.getVertexBasedOnStrategy(
-                samplingStrategy,
-                this.rootClade,
-                new int[]{this.getSizeOfLeavesArray()},
-                0.0
-        );
+        Tree topology = super.getTreeBasedOnStrategy(samplingStrategy, heightStrategy);
+        this.assignHeights(topology, samplingStrategy);
+
+        return topology;
+    }
+
+    private void assignHeights(Tree tree, SamplingStrategy samplingStrategy) {
+        Node root = tree.getRoot();
+
+        Map<Node, CTMCCCDCladePartition> partitionsInTree = new HashMap<>();
+        this.collectCladePartitions(root, partitionsInTree);
+
+        Map<Node, Double> topBranchLengths = switch (samplingStrategy) {
+            case MAP -> this.estimator.getAllMAPLengths(partitionsInTree);
+            case Sampling -> this.estimator.sampleAllLengths(partitionsInTree);
+            default -> throw new UnsupportedOperationException("This sampling type is not implemented.");
+        };
+
+        this.assignHeights(root, topBranchLengths, 0.0);
 
         double timeSinceLastSplit = this.sampleTimeSinceLastSplit(samplingStrategy);
         double mostRecentSampleTime = this.getMostRecentSampleTime(root);
         this.incrementHeight(root, timeSinceLastSplit - mostRecentSampleTime);
         this.setLeavesToZero(root);
+    }
 
-        return new Tree(root);
+    public Clade collectCladePartitions(Node vertex, Map<Node, CTMCCCDCladePartition> collectedPartitions) {
+        BitSet cladeInBits = BitSet.newBitSet(leafArraySize);
+
+        if (vertex.isLeaf()) {
+            int index = vertex.getNr();
+            cladeInBits.set(index);
+            return cladeMapping.get(cladeInBits);
+        }
+
+        Clade firstChildClade = collectCladePartitions(vertex.getChildren().get(0), collectedPartitions);
+        Clade secondChildClade = collectCladePartitions(vertex.getChildren().get(1), collectedPartitions);
+
+        cladeInBits.or(firstChildClade.getCladeInBits());
+        cladeInBits.or(secondChildClade.getCladeInBits());
+
+        Clade currentClade = cladeMapping.get(cladeInBits);
+
+        CTMCCCDCladePartition partition = (CTMCCCDCladePartition) currentClade.getCladePartition(firstChildClade, secondChildClade);
+        collectedPartitions.put(vertex, partition);
+
+        return currentClade;
+    }
+
+    public Clade collectClades(Node vertex, Map<Node, CTMCCCDClade> collectedClades) {
+        BitSet cladeInBits = BitSet.newBitSet(leafArraySize);
+
+        if (vertex.isLeaf()) {
+            int index = vertex.getNr();
+            cladeInBits.set(index);
+            return cladeMapping.get(cladeInBits);
+        }
+
+        Clade firstChildClade = collectClades(vertex.getChildren().get(0), collectedClades);
+        Clade secondChildClade = collectClades(vertex.getChildren().get(1), collectedClades);
+
+        cladeInBits.or(firstChildClade.getCladeInBits());
+        cladeInBits.or(secondChildClade.getCladeInBits());
+
+        CTMCCCDClade currentClade = (CTMCCCDClade) cladeMapping.get(cladeInBits);
+        collectedClades.put(vertex, currentClade);
+
+        return currentClade;
     }
 
     private void setLeavesToZero(Node vertex) {
@@ -115,84 +170,22 @@ public class CTMCCCD extends AbstractCCD {
         }
     }
 
-    protected Node getVertexBasedOnStrategy(
-            SamplingStrategy samplingStrategy,
-            Clade clade,
-            int[] runningInnerIndex,
+    protected void assignHeights(
+            Node vertex,
+            Map<Node, Double> topBranchLengths,
             double parentHeight
     ) {
-        if (clade.isLeaf()) {
-            int leafNr = clade.getCladeInBits().nextSetBit(0);
-            String taxonName = this.getSomeBaseTree().getTaxaNames()[leafNr];
-
-            Node vertex = new Node(taxonName);
-            vertex.setNr(leafNr);
+        if (vertex.isLeaf()) {
             vertex.setHeight(parentHeight);
-
-            return vertex;
+            return;
         }
 
-        CTMCCCDCladePartition chosenPartition;
-        double chosenRate = 0.0;
+        double topBranchLength = topBranchLengths.get(vertex);
+        vertex.setHeight(parentHeight - topBranchLength);
 
-        List<CTMCCCDCladePartition> cladePartitions = clade.getPartitions().stream().map(x -> (CTMCCCDCladePartition) x).toList();
-        switch (samplingStrategy) {
-            case Sampling -> {
-                chosenPartition = cladePartitions.get(0);
-
-                double totalRate = cladePartitions.stream().mapToDouble(x -> x.getRate()).sum();
-                double sampleAtAccumulativeRate = totalRate * random.nextDouble();
-
-                double accumulativeRate = 0.0;
-                for (CTMCCCDCladePartition partition : cladePartitions) {
-                    accumulativeRate += partition.getRate();
-
-                    if (sampleAtAccumulativeRate < accumulativeRate) {
-                        chosenPartition = partition;
-                        break;
-                    }
-                }
-
-                chosenRate = new ExponentialDistribution(totalRate).sample();
-            }
-            case MAP -> {
-                chosenPartition = cladePartitions.get(0);
-
-                for (CTMCCCDCladePartition partition : cladePartitions) {
-                    if (chosenRate < partition.getRate()) {
-                        chosenPartition = partition;
-                    }
-                    chosenRate += partition.getRate();
-                }
-            }
-            default -> {
-                throw new UnsupportedOperationException("Sampling type not implemented.");
-            }
+        for (Node child : vertex.getChildren()) {
+            assignHeights(child, topBranchLengths, parentHeight - topBranchLength);
         }
-
-        double branchLength = 1 / chosenRate;
-
-        Node firstChild = this.getVertexBasedOnStrategy(
-                samplingStrategy,
-                chosenPartition.getChildClades()[0],
-                runningInnerIndex,
-                parentHeight - branchLength
-        );
-        Node secondChild = this.getVertexBasedOnStrategy(
-                samplingStrategy,
-                chosenPartition.getChildClades()[1],
-                runningInnerIndex,
-                parentHeight - branchLength
-        );
-
-        Node vertex = new Node();
-        vertex.setNr(runningInnerIndex[0]++);
-
-        vertex.setHeight(parentHeight - branchLength);
-        vertex.addChild(firstChild);
-        vertex.addChild(secondChild);
-
-        return vertex;
     }
 
     @Override

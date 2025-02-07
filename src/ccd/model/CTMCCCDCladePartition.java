@@ -26,7 +26,7 @@ public class CTMCCCDCladePartition extends CladePartition {
         return vertexHeight - childHeight;
     }
 
-    private static CTMCCCDCladePartitionObservation createObservation(Node vertex) {
+    public static CTMCCCDCladePartitionObservation createObservation(Node vertex) {
         return new CTMCCCDCladePartitionObservation(
                 getBranchLength(vertex.getParent(), vertex)
         );
@@ -52,35 +52,41 @@ public class CTMCCCDCladePartition extends CladePartition {
 
     /* -- DISTRIBUTION - DISTRIBUTION -- */
 
-    protected double rate;
+    BranchLengthDistribution topBranchLengthDistribution;
 
-    public void setRate(double rate) {
-        this.rate = rate;
+    public BranchLengthDistribution getTopBranchLengthDistribution() {
+        return topBranchLengthDistribution;
     }
 
-    public double getRate() {
-        return this.rate;
+    public void setTopBranchLengthDistribution(BranchLengthDistribution topBranchLengthDistribution) {
+        this.topBranchLengthDistribution = topBranchLengthDistribution;
     }
 
     public double getCCP(Node vertex) {
-        throw new UnsupportedOperationException();
+        double ccdCCP = super.getCCP(vertex);
+
+        if (vertex.isRoot()) {
+            return ccdCCP;
+        }
+
+        CTMCCCDCladePartitionObservation observation = createObservation(vertex);
+        BranchLengthDistribution branchLengthDistribution = this.getTopBranchLengthDistribution();
+        double branchLengthProbability = branchLengthDistribution.density(observation.branchLengthTop());
+
+        return ccdCCP + branchLengthProbability;
     }
 
     public double getLogCCP(Node vertex) {
-        if (vertex.isRoot()) {
-            return Math.log(1.0 * this.getNumberOfOccurrences() / this.getParentClade().getNumberOfOccurrences());
-        }
+        double logCcdCCP = super.getLogCCP(vertex);
 
-        double sumRates = 0.0;
-        for (CladePartition partition : this.getParentClade().getPartitions()) {
-            sumRates += ((CTMCCCDCladePartition) partition).getRate();
+        if (vertex.isRoot()) {
+            return logCcdCCP;
         }
-        double logTransitionProbability = Math.log(this.getRate() / sumRates);
 
         CTMCCCDCladePartitionObservation observation = createObservation(vertex);
-        double branchLengthTop = observation.branchLengthTop();
-        double logDwellTimeProbability = Math.log(sumRates) - sumRates * branchLengthTop;
+        BranchLengthDistribution branchLengthDistribution = this.getTopBranchLengthDistribution();
+        double logBranchLengthProbability = branchLengthDistribution.logDensity(observation.branchLengthTop());
 
-        return logTransitionProbability + logDwellTimeProbability;
+        return logCcdCCP + logBranchLengthProbability;
     }
 }

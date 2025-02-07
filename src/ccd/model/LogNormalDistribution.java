@@ -54,9 +54,9 @@ public class LogNormalDistribution extends BranchLengthDistribution {
         return Math.exp(sampledLogValue);
     }
 
-    public static LogNormalDistribution estimateMLE(double[] observations) {
-        double logMean = new Mean().evaluate(observations);
-        double logVariance = new Variance().evaluate(observations);
+    public static LogNormalDistribution estimateMLE(double[] logObservations) {
+        double logMean = new Mean().evaluate(logObservations);
+        double logVariance = new Variance().evaluate(logObservations);
         return new LogNormalDistribution(logMean, Math.sqrt(logVariance));
     }
 }

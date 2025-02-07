@@ -10,6 +10,7 @@ import org.apache.commons.math3.stat.correlation.Covariance;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public abstract class MatrixEstimator extends ParameterEstimator<MatrixCCD> {
     @Override
@@ -43,7 +44,7 @@ public abstract class MatrixEstimator extends ParameterEstimator<MatrixCCD> {
             cubes[i] = configuration.getDistancesForCompatibleTree(tree);
         }
 
-        double[] means = new double[ccd.getNumberOfLeaves() - 1];
+        double[] means = new double[configuration.distancesSpecified.size()];
         for (double[] cube : cubes) {
             for (int i = 0; i < cube.length; i++) {
                 means[i] += cube[i] / cubes.length;

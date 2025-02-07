@@ -10,12 +10,14 @@ import org.apache.commons.math3.util.Pair;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 public class TreeMatrixConfiguration {
     int n;
     TaxonSet taxonSet;
     List<Pair<Integer, Integer>> distancesSpecified;
+    boolean allTreesAreCompatible;
 
     public TreeMatrixConfiguration(int n, List<Pair<Integer, Integer>> distancesSpecified, TaxonSet taxonSet) {
         this.n = n;
@@ -24,16 +26,17 @@ public class TreeMatrixConfiguration {
     }
 
     public double[] getDistancesForCompatibleTree(Tree tree) {
-        double[] distances = new double[n - 1];
+        double[] distances = new double[this.distancesSpecified.size()];
+        Random random = new Random();
 
-        for (int i = 0; i < n - 1; i++) {
+        for (int i = 0; i < this.distancesSpecified.size(); i++) {
             Pair<Integer, Integer> distancePair = this.distancesSpecified.get(i);
             Node node1 = tree.getNode(distancePair.getFirst());
             Node node2 = tree.getNode(distancePair.getSecond());
 
             Node mrca = TreeUtils.getCommonAncestorNode(tree, Set.of(node1.getID(), node2.getID()));
             double logDistance = Math.log(2 * mrca.getHeight());
-            distances[i] = logDistance;
+            distances[i] = logDistance * (1.0 + random.nextGaussian() / 10000);
         }
 
         return distances;
@@ -43,7 +46,7 @@ public class TreeMatrixConfiguration {
         double [] distanceMatrix = new double[n * n];
         Arrays.fill(distanceMatrix, Double.MAX_VALUE);
 
-        for (int i = 0; i < n - 1; i++) {
+        for (int i = 0; i < this.distancesSpecified.size(); i++) {
             Pair<Integer, Integer> distancePair = this.distancesSpecified.get(i);
             int a = distancePair.getFirst();
             int b = distancePair.getSecond();
@@ -71,6 +74,8 @@ public class TreeMatrixConfiguration {
      * have a unique MRCA.
      */
     public boolean isTreeCompatible(Tree tree) {
+        if (allTreesAreCompatible) return true;
+
         boolean[] usedAsMRCA = new boolean[tree.getNodeCount()];
 
         for (Pair<Integer, Integer> distancePair : this.distancesSpecified) {

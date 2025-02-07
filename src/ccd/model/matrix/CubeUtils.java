@@ -25,7 +25,7 @@ public class CubeUtils {
 
         List<Taxon> taxaNames = new ArrayList<>();
         for (int i = 0; i < tree.getLeafNodeCount(); i++) {
-            taxaNames.add(new Taxon(String.valueOf(i)));
+            taxaNames.add(new Taxon(tree.getNode(i).getID()));
         }
         TaxonSet taxonSet = new TaxonSet(taxaNames);
 
@@ -40,7 +40,7 @@ public class CubeUtils {
     static TreeMatrixConfiguration getConfiguration(List<Pair<Integer, Integer>> distancesSpecified, Tree tree) {
         List<Taxon> taxaNames = new ArrayList<>();
         for (int i = 0; i < tree.getLeafNodeCount(); i++) {
-            taxaNames.add(new Taxon(String.valueOf(i)));
+            taxaNames.add(new Taxon(tree.getNode(i).getID()));
         }
         TaxonSet taxonSet = new TaxonSet(taxaNames);
 

@@ -67,12 +67,8 @@ public class MatrixCCD extends AbstractCCD {
     public Tree getMAPTree(HeightSettingStrategy settingStrategy) {
         if (settingStrategy != HeightSettingStrategy.None) return super.getMAPTree(settingStrategy);
 
-        Tree tree = super.getMAPTree();
-
         double[] cube = this.getCubeDistribution().getMeans();
-        this.getConfiguration().getTree(cube);
-
-        return tree;
+        return this.getConfiguration().getTree(cube);
     }
 
     /** -- UNSUPPORTED METHODS **/
