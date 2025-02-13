@@ -2,7 +2,6 @@ package ccd.model;
 
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
-import org.apache.commons.math3.distribution.ExponentialDistribution;
 
 import java.util.*;
 

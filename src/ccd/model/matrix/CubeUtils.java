@@ -52,28 +52,6 @@ public class CubeUtils {
         return configuration;
     }
 
-    static int getPathLength(Tree tree, int node1Idx, int node2Idx) {
-        if (node1Idx == node2Idx) return 0;
-
-        Node node1 = tree.getNode(node1Idx);
-        Node node2 = tree.getNode(node2Idx);
-        Node mrca = TreeUtils.getCommonAncestorNode(tree, Set.of(node1.getID(), node2.getID()));
-
-        int mrcaToNode1 = 0;
-        while (node1.getParent() != mrca) {
-            mrcaToNode1++;
-            node1 = node1.getParent();
-        }
-
-        int mrcaToNode2 = 0;
-        while (node2.getParent() != mrca) {
-            mrcaToNode2++;
-            node2 = node2.getParent();
-        }
-
-        return 1 + mrcaToNode1 + mrcaToNode2;
-    }
-
     static SimpleGraph createUnweightedGraphForTree(Tree tree) {
         SimpleGraph<Integer, DefaultEdge> graph = new SimpleGraph<>(DefaultEdge.class);
         createGraphForVertex(graph, tree.getRoot());
