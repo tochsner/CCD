@@ -4,7 +4,6 @@ import beast.base.evolution.tree.Node;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Function;
 
 public class SBCCDCladePartition extends CladePartition {
     private List<SBCCDCladePartitionObservation> observations = new LinkedList<>();
@@ -111,20 +110,20 @@ public class SBCCDCladePartition extends CladePartition {
         if (vertex.getChild(Utils.getFirstChild(vertex)).isLeaf()) {
             firstBranchProbability = 1.0;
         } else {
-            firstBranchProbability = firstBranchLengthDistribution.density(firstBranchLength / subTreeHeight);
+            firstBranchProbability = firstBranchLengthDistribution.density(firstBranchLength / subTreeHeight) / subTreeHeight;
         }
 
         double secondBranchProbability;
         if (vertex.getChild(Utils.getSecondChild(vertex)).isLeaf()) {
             secondBranchProbability = 1.0;
         } else {
-            secondBranchProbability = secondBranchLengthDistribution.density(secondBranchLength / subTreeHeight);
+            secondBranchProbability = secondBranchLengthDistribution.density(secondBranchLength / subTreeHeight) / subTreeHeight;
         }
 
         return ccdCCP * firstBranchProbability * secondBranchProbability;
     }
 
-    public double getLogCCP(Node vertex) {
+    public double getLogCCP(Node vertex, double[] running) {
         double logCcdCCP = super.getLogCCP();
 
         double subTreeHeight = this.getMaxDistanceToLeaf(vertex);
@@ -139,14 +138,16 @@ public class SBCCDCladePartition extends CladePartition {
         if (vertex.getChild(Utils.getFirstChild(vertex)).isLeaf()) {
             firstLogBranchProbability = 0.0;
         } else {
-            firstLogBranchProbability = firstBranchLengthDistribution.logDensity(firstBranchLength / subTreeHeight);
+            firstLogBranchProbability = firstBranchLengthDistribution.logDensity(firstBranchLength / subTreeHeight) - Math.log(subTreeHeight);
+            running[0] -= Math.log(subTreeHeight);
         }
 
         double secondLogBranchProbability;
         if (vertex.getChild(Utils.getSecondChild(vertex)).isLeaf()) {
             secondLogBranchProbability = 0.0;
         } else {
-            secondLogBranchProbability = secondBranchLengthDistribution.logDensity(secondBranchLength / subTreeHeight);
+            secondLogBranchProbability = secondBranchLengthDistribution.logDensity(secondBranchLength / subTreeHeight) - Math.log(subTreeHeight);
+            running[0] -= Math.log(subTreeHeight);
         }
 
         return logCcdCCP + firstLogBranchProbability + secondLogBranchProbability;

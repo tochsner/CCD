@@ -294,7 +294,7 @@ public class CCD0 extends AbstractCCD {
      * Expand CCD graph with clade partitions where parent and children were
      * observed, but not that clade partition.
      */
-    private void expand() {
+    public void expand() {
         // long start = System.currentTimeMillis();
 
         // 1. sort clades

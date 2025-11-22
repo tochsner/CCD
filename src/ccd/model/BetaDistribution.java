@@ -1,6 +1,9 @@
 package ccd.model;
 
 import org.apache.commons.math3.analysis.MultivariateFunction;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.solvers.IllinoisSolver;
+import org.apache.commons.math3.exception.NoBracketingException;
 import org.apache.commons.math3.optim.*;
 import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.apache.commons.math3.optim.nonlinear.scalar.ObjectiveFunction;
@@ -85,10 +88,26 @@ public class BetaDistribution extends BranchLengthDistribution {
     }
 
     public static BetaDistribution estimate(double[] observations) {
-        return new BetaDistribution(
-                BetaDistribution.estimateAlpha(observations),
-                BetaDistribution.estimateBeta(observations)
+        // see https://www.tandfonline.com/doi/pdf/10.1080/00949657808810232
+
+        double logG1 = Arrays.stream(observations).map(x -> Math.log(x) / observations.length).sum();
+        double logG2 = Arrays.stream(observations).map(x -> Math.log(1.0 - x) / observations.length).sum();
+
+        UnivariateFunction func = beta -> Digamma.value(beta) - Digamma.value(InverseDigamma.value(logG1 - logG2 + Digamma.value(beta)) + beta) - logG2;
+
+        double initialGuess = BetaDistribution.estimateBeta(observations);
+        IllinoisSolver solver = new IllinoisSolver(1e-5);
+        double beta = solver.solve(
+                500,
+                func,
+                initialGuess * 0.1,
+                initialGuess * 10,
+                initialGuess
         );
+
+        double alpha = InverseDigamma.value(logG1 - logG2 + Digamma.value(beta));
+
+        return new BetaDistribution(alpha, beta);
     }
 
     public static double[] estimateMAP(double[] observations, double relTolerance) {

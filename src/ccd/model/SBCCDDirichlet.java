@@ -166,10 +166,6 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
             return 0.0;
         }
 
-        if (clade.getNumberOfOccurrences() < 2) {
-            return existingCladeAlphas.values().stream().mapToDouble(x -> x).average().orElseThrow();
-        }
-
         List<Double> parentAlphas = new ArrayList<>();
         List<Double> observedFractions = new ArrayList<>();
 
@@ -201,6 +197,11 @@ public class SBCCDDirichlet extends ParameterEstimator<SBCCD> {
         UnivariateFunction alphaFunction = alpha -> n * Digamma.value(alpha) - parentAlphas.stream().mapToDouble(x -> Digamma.value(x - alpha)).sum() + logF - logOneMinusF;
 
         double maxAlpha = parentAlphas.stream().mapToDouble(x -> x).min().orElseThrow();
+
+        if (clade.getNumberOfOccurrences() < 5) {
+            return 0.8 * maxAlpha;
+        }
+
         double initialGuess = maxAlpha / 2;
         IllinoisSolver solver = new IllinoisSolver(1e-5);
         try {

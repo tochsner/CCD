@@ -1,5 +1,7 @@
 package ccd.model;
 
+import org.apache.commons.math3.analysis.function.Logit;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,7 +9,7 @@ import java.util.Map;
 import java.util.stream.DoubleStream;
 
 
-public class SBCCDCladeBeta extends ParameterEstimator<SBCCD> {
+public class SBCCDLogisticMultivariateGaussian extends ParameterEstimator<SBCCD> {
 
     @Override
     public SBCCD buildCCD(int numLeaves, boolean storeBaseTrees) {
@@ -52,8 +54,8 @@ public class SBCCDCladeBeta extends ParameterEstimator<SBCCD> {
     }
 
     private void estimatePartitionParameters(SBCCD sbccd) {
-        Map<BitSet, Double> cladeAlphas = new HashMap<>();
-        Map<BitSet, Double> cladeBetas = new HashMap<>();
+        Map<BitSet, Double> cladeMus = new HashMap<>();
+        Map<BitSet, Double> cladeSigmas = new HashMap<>();
 
         for (Clade clade : sbccd.getClades()) {
             if (clade.isRoot() || clade.isLeaf()) continue;
@@ -64,36 +66,36 @@ public class SBCCDCladeBeta extends ParameterEstimator<SBCCD> {
 
             if (observedFractions.length <= 2) continue;
 
-            BetaDistribution dist = BetaDistribution.estimate(observedFractions);
+            LogitNormalDistribution dist = LogitNormalDistribution.estimateMLE(observedFractions);
 
-            double cladeAlpha = dist.betaDistribution.getAlpha();
-            double cladeBeta = dist.betaDistribution.getBeta();
+            double cladeMu = dist.mean;
+            double cladeSigma = dist.std;
 
-            cladeAlphas.put(cladeBitSet, cladeAlpha);
-            cladeBetas.put(cladeBitSet, cladeBeta);
+            cladeMus.put(cladeBitSet, cladeMu);
+            cladeSigmas.put(cladeBitSet, cladeSigma);
         }
 
         // set clade partition parameters
 
-        double meanAlpha = cladeAlphas.values().stream().mapToDouble(x -> x).sum() / cladeAlphas.size();
-        double meanBeta = cladeBetas.values().stream().mapToDouble(x -> x).sum() / cladeBetas.size();
+        double meanMu = cladeMus.values().stream().mapToDouble(x -> x).sum() / cladeMus.size();
+        double meanSigma = cladeSigmas.values().stream().mapToDouble(x -> x).sum() / cladeSigmas.size();
 
         for (SBCCDCladePartition partition : sbccd.getAllPartitions()) {
             Clade firstClade = Utils.getFirstClade(partition);
             Clade secondClade = Utils.getSecondClade(partition);
 
             if (!firstClade.isLeaf()) {
-                double alpha = cladeAlphas.getOrDefault(firstClade.getCladeInBits(), meanAlpha);
-                double beta = cladeBetas.getOrDefault(firstClade.getCladeInBits(), meanBeta);
-                partition.setFirstBranchAlpha(alpha);
-                partition.setFirstBranchBeta(beta);
+                double mu = cladeMus.getOrDefault(firstClade.getCladeInBits(), meanMu);
+                double sigma = cladeSigmas.getOrDefault(firstClade.getCladeInBits(), meanSigma);
+                partition.setFirstBranchAlpha(mu);
+                partition.setFirstBranchBeta(sigma);
             }
 
             if (!secondClade.isLeaf()) {
-                double alpha = cladeAlphas.getOrDefault(secondClade.getCladeInBits(), meanAlpha);
-                double beta = cladeBetas.getOrDefault(secondClade.getCladeInBits(), meanBeta);
-                partition.setSecondBranchAlpha(alpha);
-                partition.setSecondBranchBeta(beta);
+                double mu = cladeMus.getOrDefault(secondClade.getCladeInBits(), meanMu);
+                double sigma = cladeSigmas.getOrDefault(secondClade.getCladeInBits(), meanSigma);
+                partition.setSecondBranchAlpha(mu);
+                partition.setSecondBranchBeta(sigma);
             }
         }
     }
@@ -118,6 +120,7 @@ public class SBCCDCladeBeta extends ParameterEstimator<SBCCD> {
             throw new AssertionError("No parent clades found. This should not happen.");
         }
 
-        return observedFractions.stream().mapToDouble(x -> x).toArray();
+        Logit logit = new Logit();
+        return observedFractions.stream().mapToDouble(x -> logit.value(x)).toArray();
     }
 }
